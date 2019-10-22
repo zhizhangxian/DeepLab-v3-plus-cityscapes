@@ -16,7 +16,6 @@ else:
     from modules import InPlaceABNSync as BatchNorm2d
 
 
-
 class ConvBNReLU(nn.Module):
     def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, dilation=1, *args, **kwargs):
         super(ConvBNReLU, self).__init__()
@@ -117,23 +116,25 @@ class Decoder(nn.Module):
 class MacroDecoder(nn.Module):
     def __init__(self, C_low_level_feature_list):
         super(MacroDecoder, self).__init__()
-        self.cell_0 = ConvBNReLU(256 + 192, 256, 5, 1, 1)  # level_16
-        self.cell_1 = ConvBNReLU(256 + 96, 256, 5, 1, 1)  # level_8
-        self.cell_2 = ConvBNReLU(256 + 48, 256, 5, 1, 1)  # level_4
+        # self.cell_0 = ConvBNReLU(256 + 192, 256, 3, 1, 1)  # level_16
+        # self.cell_1 = ConvBNReLU(256 + 96, 256, 3, 1, 1)  # level_8
+        self.cell_2 = nn.Sequential(ConvBNReLU(256 + 48, 256, 3, 1, 1),
+                                    ConvBNReLU(256, 256, 3, 1, 1))
+        # level_4
 
         self.skip_conv1 = ConvBNReLU(C_low_level_feature_list[0], 48, 1, 1, 0)
-        self.skip_conv2 = ConvBNReLU(C_low_level_feature_list[1], 96, 1, 1, 0)
-        self.skip_conv3 = ConvBNReLU(C_low_level_feature_list[2], 192, 1, 1, 0)
+        # self.skip_conv2 = ConvBNReLU(C_low_level_feature_list[1], 96, 1, 1, 0)
+        # self.skip_conv3 = ConvBNReLU(C_low_level_feature_list[2], 192, 1, 1, 0)
 
         self.output_conv = ConvBNReLU(256, 19, 1, 1, 0)
 
-    def forward(self, x, feature_4, feature_8, feature_16):
+    def forward(self, x, feature_4):
         feature_4 = self.skip_conv1(feature_4)
-        feature_8 = self.skip_conv2(feature_8)
-        feature_16 = self.skip_conv3(feature_16)
+        # feature_8 = self.skip_conv2(feature_8)
+        # feature_16 = self.skip_conv3(feature_16)
 
-        x = self.cell_0(torch.cat((x, feature_16), dim=1))
-        x = self.cell_1(torch.cat((F.interpolate(x, feature_8.shape[2:], mode='bilinear', align_corners=True), feature_8), dim=1))
+        # x = self.cell_0(torch.cat((x, feature_16), dim=1))
+        # x = self.cell_1(torch.cat((F.interpolate(x, feature_8.shape[2:], mode='bilinear', align_corners=True), feature_8), dim=1))
         x = self.cell_2(torch.cat((F.interpolate(x, feature_4.shape[2:], mode='bilinear', align_corners=True), feature_4), dim=1))
 
         return self.output_conv(x)
@@ -161,7 +162,7 @@ class Deeplab_v3plus(nn.Module):
         feat4, feat8, feat16, feat32 = self.backbone(x)
         feat_aspp = self.aspp(feat32)
 
-        logits = self.decoder(feat_aspp, feat4, feat8, feat16)
+        logits = self.decoder(feat_aspp, feat4)
         logits = F.interpolate(logits, (H, W), mode='bilinear', align_corners=True)
 
         return logits

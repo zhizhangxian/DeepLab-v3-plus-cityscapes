@@ -113,12 +113,47 @@ class Decoder(nn.Module):
                     nn.init.constant_(ly.bias, 0)
 
 
+class MacroDecoder(nn.Module):
+    def __init__(self, C_low_level_feature_list):
+        super(MacroDecoder, self).__init__()
+        self.cell_0 = ConvBNReLU(256 + 192, 256, 3, 1, 1)  # level_16
+        self.cell_1 = ConvBNReLU(256 + 96, 256, 3, 1, 1)  # level_8
+        self.cell_2 = nn.Sequential(ConvBNReLU(256 + 48, 256, 3, 1, 1),
+                                    ConvBNReLU(256, 256, 3, 1, 1))
+        # level_4
+
+        self.skip_conv1 = ConvBNReLU(C_low_level_feature_list[0], 48, 1, 1, 0)
+        self.skip_conv2 = ConvBNReLU(C_low_level_feature_list[1], 96, 1, 1, 0)
+        self.skip_conv3 = ConvBNReLU(C_low_level_feature_list[2], 192, 1, 1, 0)
+
+        self.output_conv = ConvBNReLU(256, 19, 1, 1, 0)
+
+    def forward(self, x, feature_4, feature_8, feature_16):
+        feature_4 = self.skip_conv1(feature_4)
+        feature_8 = self.skip_conv2(feature_8)
+        feature_16 = self.skip_conv3(feature_16)
+
+        x = self.cell_0(torch.cat((x, feature_16), dim=1))
+        x = self.cell_1(torch.cat((F.interpolate(x, feature_8.shape[2:], mode='bilinear', align_corners=True), feature_8), dim=1))
+        x = self.cell_2(torch.cat((F.interpolate(x, feature_4.shape[2:], mode='bilinear', align_corners=True), feature_4), dim=1))
+
+        return self.output_conv(x)
+
+    def init_weight(self):
+        for ly in self.children():
+            if isinstance(ly, nn.Conv2d):
+                nn.init.kaiming_normal_(ly.weight, a=1)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
+
+
 class Deeplab_v3plus(nn.Module):
     def __init__(self, cfg, *args, **kwargs):
         super(Deeplab_v3plus, self).__init__()
         self.backbone = Resnet101(stride=16)
         self.aspp = ASPP(in_chan=2048, out_chan=256, with_gp=cfg.aspp_global_feature)
-        self.decoder = Decoder(19)
+        low_level_list = [256, 512, 1024]
+        self.decoder = MacroDecoder(low_level_list)
 
         self.init_weight()
 
