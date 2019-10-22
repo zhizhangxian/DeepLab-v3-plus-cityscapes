@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-
+import platform
 
 import torch
 import torch.nn as nn
@@ -9,8 +9,12 @@ import torch.nn.functional as F
 import torchvision
 
 from models.resnet import Resnet101
-# from modules import InPlaceABNSync as BatchNorm2d
-from torch.nn import BatchNorm2d
+
+if platform.system() is 'Windows':
+    from torch.nn import BatchNorm2d
+else:
+    from modules import InPlaceABNSync as BatchNorm2d
+
 
 
 class ConvBNReLU(nn.Module):
@@ -134,6 +138,13 @@ class MacroDecoder(nn.Module):
 
         return self.output_conv(x)
 
+    def init_weight(self):
+        for ly in self.children():
+            if isinstance(ly, nn.Conv2d):
+                nn.init.kaiming_normal_(ly.weight, a=1)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
+
 
 class Deeplab_v3plus(nn.Module):
     def __init__(self, cfg, *args, **kwargs):
@@ -180,7 +191,7 @@ if __name__ == "__main__":
         net = nn.DataParallel(net)
         for i in range(1):
             #  with torch.no_grad():
-            in_ten = torch.randn((1, 3, 768, 768)).cuda()
+            in_ten = torch.randn((2, 3, 768, 768)).cuda()
             logits = net(in_ten)
             print(i)
             print(logits.size())
