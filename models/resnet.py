@@ -9,7 +9,7 @@ import torchvision
 import torch.utils.model_zoo as modelzoo
 
 from modules import InPlaceABNSync as BatchNorm2d
-
+# from torch.nn import BatchNorm2d
 
 resnet18_url = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
 resnet50_url = 'https://download.pytorch.org/models/resnet50-19c8e357.pth'
@@ -18,12 +18,12 @@ resnet101_url = 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'
 
 class Bottleneck(nn.Module):
     def __init__(self,
-            in_chan,
-            out_chan,
-            stride = 1,
-            stride_at_1x1 = False,
-            dilation = 1,
-            *args, **kwargs):
+                 in_chan,
+                 out_chan,
+                 stride=1,
+                 stride_at_1x1=False,
+                 dilation=1,
+                 *args, **kwargs):
         super(Bottleneck, self).__init__(*args, **kwargs)
 
         stride1x1, stride3x3 = (stride, 1) if stride_at_1x1 else (1, stride)
@@ -31,23 +31,23 @@ class Bottleneck(nn.Module):
         mid_chan = int(out_chan / 4)
 
         self.conv1 = nn.Conv2d(in_chan,
-                mid_chan,
-                kernel_size = 1,
-                stride = stride1x1,
-                bias = False)
+                               mid_chan,
+                               kernel_size=1,
+                               stride=stride1x1,
+                               bias=False)
         self.bn1 = BatchNorm2d(mid_chan)
         self.conv2 = nn.Conv2d(mid_chan,
-                mid_chan,
-                kernel_size = 3,
-                stride = stride3x3,
-                padding = dilation,
-                dilation = dilation,
-                bias = False)
+                               mid_chan,
+                               kernel_size=3,
+                               stride=stride3x3,
+                               padding=dilation,
+                               dilation=dilation,
+                               bias=False)
         self.bn2 = BatchNorm2d(mid_chan)
         self.conv3 = nn.Conv2d(mid_chan,
-                out_chan,
-                kernel_size=1,
-                bias=False)
+                               out_chan,
+                               kernel_size=1,
+                               bias=False)
         self.bn3 = nn.BatchNorm2d(out_chan)
         self.relu = nn.ReLU(inplace=True)
 
@@ -79,13 +79,14 @@ class Bottleneck(nn.Module):
         for ly in self.children():
             if isinstance(ly, nn.Conv2d):
                 nn.init.kaiming_normal_(ly.weight, a=1)
-                if not ly.bias is None: nn.init.constant_(ly.bias, 0)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
 
 
 def create_stage(in_chan, out_chan, b_num, stride=1, dilation=1):
     assert out_chan % 4 == 0
     mid_chan = out_chan / 4
-    blocks = [Bottleneck(in_chan, out_chan, stride=stride, dilation=dilation),]
+    blocks = [Bottleneck(in_chan, out_chan, stride=stride, dilation=dilation), ]
     for i in range(1, b_num):
         blocks.append(Bottleneck(out_chan, out_chan, stride=1, dilation=dilation))
     return nn.Sequential(*blocks)
@@ -95,23 +96,23 @@ class Resnet101(nn.Module):
     def __init__(self, stride=32, *args, **kwargs):
         super(Resnet101, self).__init__()
         assert stride in (8, 16, 32)
-        dils = [1, 1] if stride==32 else [el*(16//stride) for el in (1, 2)]
-        strds = [2 if el==1 else 1 for el in dils]
+        dils = [1, 1] if stride == 32 else [el * (16 // stride) for el in (1, 2)]
+        strds = [2 if el == 1 else 1 for el in dils]
 
         self.conv1 = nn.Conv2d(
-                3,
-                64,
-                kernel_size = 7,
-                stride = 2,
-                padding = 3,
-                bias = False)
+            3,
+            64,
+            kernel_size=7,
+            stride=2,
+            padding=3,
+            bias=False)
         self.bn1 = BatchNorm2d(64)
         self.maxpool = nn.MaxPool2d(
-                kernel_size = 3,
-                stride = 2,
-                padding = 1,
-                dilation = 1,
-                ceil_mode = False)
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            dilation=1,
+            ceil_mode=False)
         self.layer1 = create_stage(64, 256, 3, stride=1, dilation=1)
         self.layer2 = create_stage(256, 512, 4, stride=2, dilation=1)
         self.layer3 = create_stage(512, 1024, 23, stride=strds[0], dilation=dils[0])
@@ -147,17 +148,17 @@ class Resnet101(nn.Module):
         return bn_params, non_bn_params
 
 
-
-
 if __name__ == "__main__":
     #  layer1 = create_stage(64, 256, 3, 1, 1)
     #  layer2 = create_stage(256, 512, 4, 2, 1)
     #  layer3 = create_stage(512, 1024, 6, 1, 2)
     #  layer4 = create_stage(1024, 2048, 3, 1, 4)
     #  print(layer4)
-    resnet = Resnet101Dilation8()
+    resnet = Resnet101()
     inten = torch.randn(1, 3, 224, 224)
-    _, _, _, out = resnet(inten)
-    print(out.size())
-
-
+    feat4, feat8, feat16, feat32 = resnet(inten)
+    print(feat4.size())
+    print(feat8.size())
+    print(feat16.size())
+    print(feat32.size())
+    # print(out.size())

@@ -9,6 +9,7 @@ from evaluate import MscEval
 from optimizer import Optimizer
 from loss import OhemCELoss
 from configs import config_factory
+from configs import set_seed
 
 import torch
 import torch.nn as nn
@@ -49,6 +50,9 @@ def train(verbose=True, **kwargs):
                 )
     setup_logger(cfg.respth)
     logger = logging.getLogger()
+    set_seed(cfg.seed)
+
+
 
     ## dataset
     ds = CityScapes(cfg, mode='train')
@@ -101,7 +105,6 @@ def train(verbose=True, **kwargs):
         im = im.cuda()
         lb = lb.cuda()
 
-        H, W = im.size()[2:]
         lb = torch.squeeze(lb, 1)
 
         optim.zero_grad()
