@@ -36,13 +36,13 @@ class Config(object):
         self.ohem_thresh = 0.7
         self.respth = './res'
         self.port = 32168
-        self.seed = 0
         ## eval control
         self.eval_batchsize = 1
         self.eval_n_workers = torch.cuda.device_count() * self.eval_batchsize
         self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75)
         self.eval_flip = True
-
+        self.seed = 0
+        
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
