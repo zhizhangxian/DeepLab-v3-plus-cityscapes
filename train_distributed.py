@@ -32,13 +32,13 @@ def cleanup():
 
 
 def train(rank, world_size, cfg):
-    setup(rank, world_size)
+    setup(rank, world_size, cfg)
     torch.cuda.device(rank)
     setup_logger(cfg.respth, rank)
     logger = logging.getLogger()
 
     train_dataset = CityScapes(cfg, mode='train')
-    sampler = torch.utils.data.distributed.DistributedSampler(dataset, num_replicas=world_size, rank=rank)
+    sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, num_replicas=world_size, rank=rank)
     dataloader = DataLoader(train_dataset, batch_size=cfg.ims_per_gpu, shuffle=False, sampler=sampler, num_workers=cfg.n_workers, pin_memory=True, drop_last=True)
 
     net = Deeplab_v3plus(cfg)
