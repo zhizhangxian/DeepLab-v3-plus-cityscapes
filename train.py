@@ -11,18 +11,17 @@ from loss import OhemCELoss
 from configs import config_factory
 from configs import set_seed
 
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-import torch.nn.functional as F
-import torch.distributed as dist
-
 import os
 import logging
 import time
 import datetime
 import argparse
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.distributed as dist
+from torch.utils.data import DataLoader
 
 cfg = config_factory['resnet_cityscapes']
 if not osp.exists(cfg.respth):
@@ -49,6 +48,10 @@ def train(verbose=True, **kwargs):
     logger = logging.getLogger()
     set_seed(cfg.seed)
 
+    if dist.get_rank() == 0:
+        msg = 'random seed: {:}'.format(cfg.seed)
+        logger.info(msg)
+
     # dataset
     ds = CityScapes(cfg, mode='train')
     sampler = torch.utils.data.distributed.DistributedSampler(ds)
@@ -62,6 +65,11 @@ def train(verbose=True, **kwargs):
 
     # model
     net = Deeplab_v3plus(cfg)
+
+    if args.resume:
+        checkpoint = torch.load(args.resume, map_location='cpu')
+        net.load_state_dict(checkpoint['state_dict'])
+
     net.train()
     net.cuda()
     net = nn.parallel.DistributedDataParallel(net,
@@ -87,7 +95,18 @@ def train(verbose=True, **kwargs):
     loss_avg = []
     st = glob_st = time.time()
     diter = iter(dl)
-    n_epoch = 0
+
+    try:
+        if args.resume:
+            n_epoch = checkpoint['n_epoch']
+            start_iter = checkpoint['it']
+            optim.optim.load_state_dict(checkpoint['optimizer'])
+        else:
+            n_epoch = 0
+            start_iter = 0
+
+    except:
+        raise: EOFError
     for it in range(cfg.max_iter):
         try:
             im, lb = next(diter)
@@ -141,13 +160,13 @@ def train(verbose=True, **kwargs):
                     if it % int(20 * cfg.msg_iter) == 0:
                         save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
                         state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
-                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict()}, save_pth)
+                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
 
                 else:
                     if it % int(cfg.msg_iter) == 0:
                         save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
                         state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
-                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict()}, save_pth)
+                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
 
     # dump the final model and evaluate the result
     if verbose:
@@ -160,7 +179,7 @@ def train(verbose=True, **kwargs):
         logger.info('evaluating the final model')
         net.cuda()
         net.eval()
-        evaluator = MscEval(cfg)
+        evaluator = MscaEval(cfg)
         mIOU = evaluator(net)
         logger.info('mIOU is: {}'.format(mIOU))
 
