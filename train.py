@@ -104,9 +104,9 @@ def train(verbose=True, **kwargs):
         else:
             n_epoch = 0
             start_iter = 0
-
     except:
-        raise: EOFError
+        raise NotImplementedError
+
     for it in range(cfg.max_iter):
         try:
             im, lb = next(diter)
