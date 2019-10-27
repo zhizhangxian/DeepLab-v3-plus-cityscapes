@@ -126,7 +126,7 @@ class MacroDecoder(nn.Module):
         self.skip_conv2 = ConvBNReLU(C_low_level_feature_list[1], 96, 1, 1, 0)
         self.skip_conv3 = ConvBNReLU(C_low_level_feature_list[2], 192, 1, 1, 0)
 
-        self.output_conv = ConvBNReLU(256, 19, 1, 1, 0)
+        self.output_conv = nn.Conv2d(256, 19, kernel_size=1, bias=False)
 
     def forward(self, x, feature_4, feature_8, feature_16):
         feature_4 = self.skip_conv1(feature_4)
