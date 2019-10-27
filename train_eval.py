@@ -38,11 +38,6 @@ def parse_args():
         type=int,
         default=-1,
     )
-
-    parse.add_argument(
-        '--'
-    )
-
     return parse.parse_args()
 
 
@@ -145,6 +140,25 @@ def train(verbose=True, **kwargs):
             logger.info(msg)
             loss_avg = []
             st = ed
+
+        if it % cfg.eval_iter == 0:
+            if verbose:
+                logger.info('evaluating the model of iter{}'.format(it))
+                net.eval()
+                evaluator = MscEval(cfg)
+                mIOU = evaluator(net)
+                logger.info('mIOU is: {}'.format(mIOU))
+                net.train()
+            else:
+                net.cpu()
+                save_name = 'iter_{}_model.pth'.format(it)
+                save_pth = osp.join(cfg.respth, save_name)
+                state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+
+                if dist.get_rank() == 0:
+                    torch.save(state, save_pth)
+                logger.info('model of iter {} saved to: {}'.format(it, save_pth))
+                net.cuda()
 
     # dump the final model and evaluate the result
     if verbose:
