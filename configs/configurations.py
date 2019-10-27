@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-
+import torch
+import random
+import numpy as np
 
 class Config(object):
-    def __init__(self):
+    def __init__(self, multi_scale=False):
         ## model and loss
         self.ignore_label = 255
         self.aspp_global_feature = False
@@ -11,7 +13,7 @@ class Config(object):
         self.n_classes = 19
         self.datapth = '/dataset/Cityscapes_dataset/'
         self.n_workers = 4
-        self.crop_size = (129, 129)
+        self.crop_size = (769, 769)
         self.mean = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
         # optimizer
@@ -35,7 +37,15 @@ class Config(object):
         self.respth = './res'
         self.port = 32168
         # eval control
+        self.seed_max = 1000
         self.eval_batchsize = 2
         self.eval_n_workers = 2
-        self.eval_scales = (0.5,)
+        self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75) if multi_scale else (1.0,)
         self.eval_flip = True
+
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)

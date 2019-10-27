@@ -8,7 +8,7 @@ from cityscapes import CityScapes
 from evaluate import MscEval
 from optimizer import Optimizer
 from loss import OhemCELoss
-from configs import config_factory
+from configs import config_factory, set_seed
 
 import torch
 import torch.nn as nn
@@ -17,13 +17,16 @@ import torch.nn.functional as F
 import torch.distributed as dist
 
 import os
-import logging
 import time
+import logging
+import random
+import warnings
 import datetime
 import argparse
 
+warnings.filterwarnings('ignore')
 
-cfg = config_factory['resnet_cityscapes']
+cfg = config_factory['train_eval']
 if not osp.exists(cfg.respth):
     os.makedirs(cfg.respth)
 
@@ -52,6 +55,12 @@ def train(verbose=True, **kwargs):
     )
     setup_logger(cfg.respth)
     logger = logging.getLogger()
+
+    seed = random.randint(1, cfg.seed_max)
+    set_seed(seed)
+    if dist.get_rank() == 0:
+        msg = 'random seed: {:}'.format(seed)
+        logger.info(msg)
 
     # dataset
     ds = CityScapes(cfg, mode='train')
@@ -141,13 +150,13 @@ def train(verbose=True, **kwargs):
             loss_avg = []
             st = ed
 
-        if it % cfg.eval_iter == 0:
+        if it % cfg.eval_iter == 0 and not it:
             if verbose:
                 logger.info('evaluating the model of iter{}'.format(it))
                 net.eval()
                 evaluator = MscEval(cfg)
-                mIOU = evaluator(net)
-                logger.info('mIOU is: {}'.format(mIOU))
+                mIOU, loss = evaluator(net, loss=criteria)
+                logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
                 net.train()
             else:
                 net.cpu()
