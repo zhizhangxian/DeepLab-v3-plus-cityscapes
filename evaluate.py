@@ -48,7 +48,7 @@ class MscEval(object):
                              num_workers=cfg.eval_n_workers,
                              drop_last=False)
 
-    def __call__(self, net, criteria=None):
+    def __call__(self, net, criteria=None, multi_scale=True):
         # evaluate
         hist_size = (self.cfg.n_classes, self.cfg.n_classes)
         hist = np.zeros(hist_size, dtype=np.float32)
@@ -63,7 +63,8 @@ class MscEval(object):
             N, _, H, W = label.shape
             probs = torch.zeros((N, self.cfg.n_classes, H, W))
             probs.requires_grad = False
-            for sc in self.cfg.eval_scales:
+            eval_scale = cfg.eval_scales if multi_scale else cfg.eval_scale
+            for sc in eval_scale:
                 new_hw = [int(H*sc), int(W*sc)]
                 with torch.no_grad():
                     im = F.interpolate(imgs, new_hw, mode='bilinear', align_corners=True)
@@ -85,6 +86,7 @@ class MscEval(object):
                         loss = criteria(out, torch.squeeze(lb, 1))
 
                     del out, prob
+
             probs = probs.data.numpy()
             preds = np.argmax(probs, axis=1)
 

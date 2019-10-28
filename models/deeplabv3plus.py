@@ -12,8 +12,10 @@ from models.resnet import Resnet101
 
 if platform.system() is 'Windows':
     from torch.nn import BatchNorm2d
+    print('=>Warning!  Using naive BN now!')
 else:
     from modules import InPlaceABNSync as BatchNorm2d
+    print('=>Using ABN now')
 
 
 class ConvBNReLU(nn.Module):
@@ -52,10 +54,10 @@ class ASPP(nn.Module):
         self.conv4 = ConvBNReLU(in_chan, out_chan, ks=3, dilation=18, padding=18)
         if self.with_gp:
             self.avg = nn.AdaptiveAvgPool2d((1, 1))
-            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1, padding=0)
-            self.conv_out = ConvBNReLU(out_chan * 5, out_chan, ks=1, padding=0)
+            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1)
+            self.conv_out = ConvBNReLU(out_chan*5, out_chan, ks=1)
         else:
-            self.conv_out = ConvBNReLU(out_chan * 4, out_chan, ks=1, padding=0)
+            self.conv_out = ConvBNReLU(out_chan*4, out_chan, ks=1)
 
         self.init_weight()
 
@@ -118,16 +120,18 @@ class Deeplab_v3plus(nn.Module):
         super(Deeplab_v3plus, self).__init__()
         self.backbone = Resnet101(stride=16)
         self.aspp = ASPP(in_chan=2048, out_chan=256, with_gp=cfg.aspp_global_feature)
-        self.decoder = Decoder(19)
+        self.decoder = Decoder(cfg.n_classes, low_chan=256)
+        #  self.backbone = Darknet53(stride=16)
+        #  self.aspp = ASPP(in_chan=1024, out_chan=256, with_gp=False)
+        #  self.decoder = Decoder(cfg.n_classes, low_chan=128)
 
         self.init_weight()
 
     def forward(self, x):
         H, W = x.size()[2:]
-        feat4, feat8, feat16, feat32 = self.backbone(x)
+        feat4, _, _, feat32 = self.backbone(x)
         feat_aspp = self.aspp(feat32)
-
-        logits = self.decoder(feat_aspp, feat4, feat8, feat16)
+        logits = self.decoder(feat4, feat_aspp)
         logits = F.interpolate(logits, (H, W), mode='bilinear', align_corners=True)
 
         return logits
@@ -141,23 +145,21 @@ class Deeplab_v3plus(nn.Module):
 
     def get_params(self):
         back_bn_params, back_no_bn_params = self.backbone.get_params()
-        tune_wd_params = list(self.aspp.parameters()) \
-            + list(self.decoder.parameters()) \
+        tune_wd_params = list(self.aspp.parameters())  \
+            + list(self.decoder.parameters())  \
             + back_no_bn_params
         no_tune_wd_params = back_bn_params
         return tune_wd_params, no_tune_wd_params
 
 
 if __name__ == "__main__":
-    from configs.configurations import Config
-
-    net = Deeplab_v3plus(Config())
+    net = Deeplab_v3plus(19)
     net.cuda()
-    with torch.no_grad():
-        net = nn.DataParallel(net)
-        for i in range(1):
-            #  with torch.no_grad():
-            in_ten = torch.randn((2, 3, 768, 768)).cuda()
-            logits = net(in_ten)
-            print(i)
-            print(logits.size())
+    net.train()
+    net = nn.DataParallel(net)
+    for i in range(100):
+        #  with torch.no_grad():
+        in_ten = torch.randn((1, 3, 768, 768)).cuda()
+        logits = net(in_ten)
+        print(i)
+        print(logits.size())

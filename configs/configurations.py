@@ -6,7 +6,7 @@ import numpy as np
 
 
 class Config(object):
-    def __init__(self, multi_scale=False):
+    def __init__(self):
         ## model and loss
         self.ignore_label = 255
         self.aspp_global_feature = False
@@ -41,7 +41,8 @@ class Config(object):
         self.seed_max = 1000
         self.eval_batchsize = 2
         self.eval_n_workers = 2
-        self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75) if multi_scale else (1.0,)
+        self.eval_scale = (1.0,)
+        self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75)
         self.eval_flip = True
 
 

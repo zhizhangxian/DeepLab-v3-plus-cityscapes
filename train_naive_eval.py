@@ -3,7 +3,7 @@
 
 
 from logger import *
-from models.deeplabv3plus import Deeplab_v3plus
+from models.deeplabv3plus_naive import Deeplab_v3plus
 from cityscapes import CityScapes
 from evaluate import MscEval
 from optimizer import Optimizer
@@ -160,7 +160,7 @@ def train(verbose=True, **kwargs):
                 net.train()
             else:
                 net.cpu()
-                save_name = 'iter_{}_model.pth'.format(it)
+                save_name = 'iter_{}_naive_model.pth'.format(it)
                 save_pth = osp.join(cfg.respth, save_name)
                 state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
 
@@ -172,7 +172,7 @@ def train(verbose=True, **kwargs):
     # dump the final model and evaluate the result
     if verbose:
         net.cpu()
-        save_pth = osp.join(cfg.respth, 'model_final.pth')
+        save_pth = osp.join(cfg.respth, 'model_final_naive.pth')
         state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
         if dist.get_rank() == 0:
             torch.save(state, save_pth)
