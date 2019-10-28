@@ -111,6 +111,26 @@ def train(verbose=True, **kwargs):
             sampler.set_epoch(n_epoch)
             diter = iter(dl)
             im, lb = next(diter)
+
+            if verbose:
+                logger.info('evaluating the model of iter:{}'.format(it))
+                net.eval()
+                evaluator = MscEval(cfg)
+                mIOU, loss = evaluator(net, loss=criteria, multi_scale=False)
+                logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
+                net.train()
+            else:
+                net.cpu()
+                save_name = 'iter_{}_naive_model.pth'.format(it)
+                save_pth = osp.join(cfg.respth, save_name)
+                state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+
+                if dist.get_rank() == 0:
+                    torch.save(state, save_pth)
+                logger.info('model of iter {} saved to: {}'.format(it, save_pth))
+                net.cuda()
+
+
         im = im.cuda()
         lb = lb.cuda()
 
@@ -150,24 +170,6 @@ def train(verbose=True, **kwargs):
             loss_avg = []
             st = ed
 
-        if it % cfg.eval_iter == 0 and not it:
-            if verbose:
-                logger.info('evaluating the model of iter:{}'.format(it))
-                net.eval()
-                evaluator = MscEval(cfg)
-                mIOU, loss = evaluator(net, loss=criteria, multi_scale=False)
-                logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
-                net.train()
-            else:
-                net.cpu()
-                save_name = 'iter_{}_naive_model.pth'.format(it)
-                save_pth = osp.join(cfg.respth, save_name)
-                state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
-
-                if dist.get_rank() == 0:
-                    torch.save(state, save_pth)
-                logger.info('model of iter {} saved to: {}'.format(it, save_pth))
-                net.cuda()
 
     # dump the final model and evaluate the result
     if verbose:
