@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 
+from models.autodecoder.deeplabv3plus_autodecoder import AutoDecoder
 import torch
 import platform
 import torch.nn as nn
@@ -12,8 +13,6 @@ if platform.system() is 'Windows':
     from torch.nn import BatchNorm2d as BatchNorm2d
 else:
     from modules import InPlaceABNSync as BatchNorm2d
-
-from models.autodecoder.deeplabv3plus_autodecoder import AutoDecoder
 
 
 class ConvBNReLU(nn.Module):
@@ -38,7 +37,8 @@ class ConvBNReLU(nn.Module):
         for ly in self.children():
             if isinstance(ly, nn.Conv2d):
                 nn.init.kaiming_normal_(ly.weight, a=1)
-                if not ly.bias is None: nn.init.constant_(ly.bias, 0)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
 
 
 class ASPP(nn.Module):
@@ -51,7 +51,7 @@ class ASPP(nn.Module):
         self.conv4 = ConvBNReLU(in_chan, out_chan, ks=3, dilation=18, padding=18)
         if self.with_gp:
             self.avg = nn.AdaptiveAvgPool2d((1, 1))
-            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1)
+            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1, padding=0)
             self.conv_out = ConvBNReLU(out_chan * 5, out_chan, ks=1, padding=0)
         else:
             self.conv_out = ConvBNReLU(out_chan * 4, out_chan, ks=1, padding=0)
@@ -78,7 +78,8 @@ class ASPP(nn.Module):
         for ly in self.children():
             if isinstance(ly, nn.Conv2d):
                 nn.init.kaiming_normal_(ly.weight, a=1)
-                if not ly.bias is None: nn.init.constant_(ly.bias, 0)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
 
 
 class Deeplab_v3plus(nn.Module):
@@ -86,7 +87,8 @@ class Deeplab_v3plus(nn.Module):
         super(Deeplab_v3plus, self).__init__()
         self.backbone = Resnet101(stride=16)
         self.filter_param_dict = {0: 1, 1: 2, 2: 4, 3: 8}
-        self.C_aspp_out = args.filter_multiplier * args.block_multiplier * self.filter_param_dict[betas[0]]
+        # self.C_aspp_out = args.filter_multiplier * args.block_multiplier * self.filter_param_dict[betas[0]]
+        self.C_aspp_out = args.filter_multiplier * 8
         self.aspp = ASPP(in_chan=2048, out_chan=self.C_aspp_out, with_gp=cfg.aspp_global_feature)
         self.decoder = AutoDecoder(19, args, alphas=alphas, betas=betas, gammas=gammas)
 
@@ -96,7 +98,6 @@ class Deeplab_v3plus(nn.Module):
         H, W = x.size()[2:]
         feature_4, feature_8, feature_16, feature_32 = self.backbone(x)
         x = self.aspp(feature_32)
-
         skip_feature_list = [feature_4, feature_8, feature_16, feature_32]
         logits = self.decoder(x, skip_feature_list)
         logits = F.interpolate(logits, (H, W), mode='bilinear', align_corners=True)
@@ -107,13 +108,14 @@ class Deeplab_v3plus(nn.Module):
         for ly in self.children():
             if isinstance(ly, nn.Conv2d):
                 nn.init.kaiming_normal_(ly.weight, a=1)
-                if not ly.bias is None: nn.init.constant_(ly.bias, 0)
+                if not ly.bias is None:
+                    nn.init.constant_(ly.bias, 0)
 
     def get_params(self):
         back_bn_params, back_no_bn_params = self.backbone.get_params()
         tune_wd_params = list(self.aspp.parameters()) \
-                         + list(self.decoder.parameters()) \
-                         + back_no_bn_params
+            + list(self.decoder.parameters()) \
+            + back_no_bn_params
         no_tune_wd_params = back_bn_params
         return tune_wd_params, no_tune_wd_params
 

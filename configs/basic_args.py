@@ -37,7 +37,7 @@ def obtain_search_args():
                         help='number of epochs to train (default: auto)')
     parser.add_argument('--start_epoch', type=int, default=0,
                         metavar='N', help='start epochs (default:0)')
-    parser.add_argument('--block_multiplier', type=int, default=5)
+    parser.add_argument('--block_multiplier', type=int, default=1)
     parser.add_argument('--step', type=int, default=5)
     parser.add_argument('--alpha_epoch', type=int, default=20,
                         metavar='N', help='epoch to start training alphas')
@@ -98,7 +98,7 @@ def obtain_search_args():
     parser.add_argument('--use-distribute', type=bool, default=False,
                         help='whether to use distributed in pytorch, it can help multi-gpus workload more balancing')
     parser.add_argument('--steps', type=int, default=5, help='number of nodes in a cell')
-    parser.add_argument('--filter-multiplier', type=int, default=4)
+    parser.add_argument('--filter-multiplier', type=int, default=32)
     parser.add_argument('--encoder-layer', type=int, default=12)
     parser.add_argument('--decoder-layer', type=int, default=6)
     parser.add_argument('--Output-Focal', type=bool, default=False)
@@ -165,7 +165,7 @@ def obtain_retrain_args():
     parser.add_argument('--no-val', action='store_true', default=False,
                         help='skip validation during training')
     parser.add_argument('--filter_multiplier', type=int, default=20)
-    parser.add_argument('--block_multiplier', type=int, default=5)
+    parser.add_argument('--block_multiplier', type=int, default=1)
     parser.add_argument('--autodeeplab', type=str, default='train',
                         choices=['search', 'train'])
     parser.add_argument('--load-parallel', type=int, default=0)

@@ -54,10 +54,10 @@ class ASPP(nn.Module):
         self.conv4 = ConvBNReLU(in_chan, out_chan, ks=3, dilation=18, padding=18)
         if self.with_gp:
             self.avg = nn.AdaptiveAvgPool2d((1, 1))
-            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1)
-            self.conv_out = ConvBNReLU(out_chan*5, out_chan, ks=1)
+            self.conv1x1 = ConvBNReLU(in_chan, out_chan, ks=1, padding=0)
+            self.conv_out = ConvBNReLU(out_chan*5, out_chan, ks=1, padding=0)
         else:
-            self.conv_out = ConvBNReLU(out_chan*4, out_chan, ks=1)
+            self.conv_out = ConvBNReLU(out_chan*4, out_chan, ks=1, padding=0)
 
         self.init_weight()
 

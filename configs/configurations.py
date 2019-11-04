@@ -9,7 +9,7 @@ class Config(object):
     def __init__(self):
         ## model and loss
         self.ignore_label = 255
-        self.aspp_global_feature = False
+        self.aspp_global_feature = True
         # dataset
         self.n_classes = 19
         self.datapth = '/dataset/Cityscapes_dataset/'
