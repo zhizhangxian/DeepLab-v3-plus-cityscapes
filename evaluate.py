@@ -82,7 +82,7 @@ class MscEval(object):
                         probs += prob.cpu()
 
                     if criteria is not None:
-                        loss = criteria(out, torch.squeeze(label, 1))                       
+                        loss = criteria(out, torch.squeeze(label, 1).cuda())                       
                         loss_avg.append(loss.item())
 
                     del out, prob
