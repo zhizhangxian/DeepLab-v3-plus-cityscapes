@@ -13,6 +13,7 @@ from configs import set_seed
 
 import os
 import logging
+import random
 import time
 import datetime
 import argparse
@@ -46,10 +47,11 @@ def train(verbose=True, **kwargs):
     )
     setup_logger(cfg.respth)
     logger = logging.getLogger()
-    set_seed(cfg.seed)
+    seed = random.randint(1, cfg.seed_max)
+    set_seed(seed)
 
     if dist.get_rank() == 0:
-        msg = 'random seed: {:}'.format(cfg.seed)
+        msg = 'random seed: {:}'.format(seed)
         logger.info(msg)
 
     # dataset
@@ -155,18 +157,18 @@ def train(verbose=True, **kwargs):
             loss_avg = []
             st = ed
 
-            if dist.get_rank() == 0:
-                if it < (cfg.max_iter - 20 * cfg.msg_iter):
-                    if it % int(20 * cfg.msg_iter) == 0:
-                        save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
-                        state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
-                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
+        if dist.get_rank() == 0:
+            if it < (cfg.max_iter - 20 * cfg.msg_iter):
+                if it % int(20 * cfg.msg_iter) == 0:
+                    save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
+                    state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+                    torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
 
-                else:
-                    if it % int(cfg.msg_iter) == 0:
-                        save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
-                        state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
-                        torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
+            else:
+                if it % int(cfg.msg_iter) == 0:
+                    save_pth = osp.join(cfg.respth, 'iter_{:}_'.format(it) + 'model.pth')
+                    state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+                    torch.save({'it': it, 'state_dict': state, 'optimizer': optim.optim.state_dict(), 'n_epoch': n_epoch}, save_pth)
 
     # dump the final model and evaluate the result
     if verbose:

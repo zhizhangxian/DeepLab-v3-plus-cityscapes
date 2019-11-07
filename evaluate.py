@@ -57,13 +57,13 @@ class MscEval(object):
         else:
             diter = enumerate(tqdm(self.dl))
 
-        if criteria is not None
-        loss_avg = []
+        if criteria is not None:
+            loss_avg = []
         for i, (imgs, label) in diter:
             N, _, H, W = label.shape
             probs = torch.zeros((N, self.cfg.n_classes, H, W))
             probs.requires_grad = False
-            eval_scale = cfg.eval_scales if multi_scale else cfg.eval_scale
+            eval_scale = self.cfg.eval_scales if multi_scale else self.cfg.eval_scale
             for sc in eval_scale:
                 new_hw = [int(H*sc), int(W*sc)]
                 with torch.no_grad():
@@ -82,8 +82,8 @@ class MscEval(object):
                         probs += prob.cpu()
 
                     if criteria is not None:
+                        loss = criteria(out, torch.squeeze(label, 1))                       
                         loss_avg.append(loss.item())
-                        loss = criteria(out, torch.squeeze(lb, 1))
 
                     del out, prob
 

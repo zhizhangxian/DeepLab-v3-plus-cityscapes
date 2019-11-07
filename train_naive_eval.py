@@ -61,6 +61,12 @@ def train(verbose=True, **kwargs):
     if dist.get_rank() == 0:
         msg = 'random seed: {:}'.format(seed)
         logger.info(msg)
+        msg = 'now is training full connnection model!'
+        logger.info(msg)
+        msg = 'crop_size: {:}x{:}'.format(cfg.crop_size[0],cfg.crop_size[1])
+        logger.info(msg)
+        msg = 'ims_per_gpu:{:}'.format(cfg.ims_per_gpu)
+        logger.info(msg)
 
     # dataset
     ds = CityScapes(cfg, mode='train')
@@ -101,6 +107,9 @@ def train(verbose=True, **kwargs):
     st = glob_st = time.time()
     diter = iter(dl)
     n_epoch = 0
+    
+    cfg.eval_iter = len(dl) // torch.cuda.device_count()
+    
     for it in range(cfg.max_iter):
         try:
             im, lb = next(diter)
@@ -112,23 +121,7 @@ def train(verbose=True, **kwargs):
             diter = iter(dl)
             im, lb = next(diter)
 
-            if verbose:
-                logger.info('evaluating the model of iter:{}'.format(it))
-                net.eval()
-                evaluator = MscEval(cfg)
-                mIOU, loss = evaluator(net, loss=criteria, multi_scale=False)
-                logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
-                net.train()
-            else:
-                net.cpu()
-                save_name = 'iter_{}_naive_model.pth'.format(it)
-                save_pth = osp.join(cfg.respth, save_name)
-                state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
 
-                if dist.get_rank() == 0:
-                    torch.save(state, save_pth)
-                logger.info('model of iter {} saved to: {}'.format(it, save_pth))
-                net.cuda()
 
 
         im = im.cuda()
@@ -170,11 +163,54 @@ def train(verbose=True, **kwargs):
             loss_avg = []
             st = ed
 
+            
+            
+        if it < cfg.max_iter - 1000:    
+            if it % cfg.eval_iter == 0 and (it != 0):
+
+                if verbose:
+                    logger.info('evaluating the model of iter:{}'.format(it))
+                    net.eval()
+                    evaluator = MscEval(cfg)
+                    mIOU, loss = evaluator(net, criteria=criteria, multi_scale=False)
+                    logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
+                    net.train()
+                else:
+                    net.cpu()
+                    save_name = 'iter_{}_model.pth'.format(it)
+                    save_pth = osp.join(cfg.respth, save_name)
+                    state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+
+                    if dist.get_rank() == 0:
+                        torch.save(state, save_pth)
+                    logger.info('model of iter {} saved to: {}'.format(it, save_pth))
+                    net.cuda()
+
+                
+        else:
+            if it % 20 == 0 and (it != 0):
+                if verbose:
+                    logger.info('evaluating the model of iter:{}'.format(it))
+                    net.eval()
+                    evaluator = MscEval(cfg)
+                    mIOU, loss = evaluator(net, criteria=criteria, multi_scale=False)
+                    logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
+                    net.train()
+                else:
+                    net.cpu()
+                    save_name = 'iter_{}_model.pth'.format(it)
+                    save_pth = osp.join(cfg.respth, save_name)
+                    state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
+
+                    if dist.get_rank() == 0:
+                        torch.save(state, save_pth)
+                    logger.info('model of iter {} saved to: {}'.format(it, save_pth))
+                    net.cuda()            
 
     # dump the final model and evaluate the result
     if verbose:
         net.cpu()
-        save_pth = osp.join(cfg.respth, 'model_final_naive.pth')
+        save_pth = osp.join(cfg.respth, 'model_final.pth')
         state = net.module.state_dict() if hasattr(net, 'module') else net.state_dict()
         if dist.get_rank() == 0:
             torch.save(state, save_pth)
