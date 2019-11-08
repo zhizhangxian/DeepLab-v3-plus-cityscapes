@@ -91,7 +91,6 @@ class Deeplab_v3plus(nn.Module):
         self.C_aspp_out = args.filter_multiplier * 8
         self.aspp = ASPP(in_chan=2048, out_chan=self.C_aspp_out, with_gp=cfg.aspp_global_feature)
         self.decoder = AutoDecoder(19, args, alphas=alphas, betas=betas, gammas=gammas)
-
         self.init_weight()
 
     def forward(self, x):
