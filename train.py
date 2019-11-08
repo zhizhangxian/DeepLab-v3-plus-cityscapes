@@ -181,7 +181,7 @@ def train(verbose=True, **kwargs):
         logger.info('evaluating the final model')
         net.cuda()
         net.eval()
-        evaluator = MscaEval(cfg)
+        evaluator = MscEval(cfg)
         mIOU = evaluator(net)
         logger.info('mIOU is: {}'.format(mIOU))
 
