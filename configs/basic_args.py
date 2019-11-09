@@ -109,7 +109,6 @@ def obtain_search_args():
     parser.add_argument('--manualSeed', type=int, default=10, )
     parser.add_argument('--dist', type=bool, default=True)
     parser.add_argument('--save-pth', type=str, default='log')
-    parser.add_argument('--local_rank', dest='local_rank', type=int, default=-1)
     args = parser.parse_args()
     return args
 

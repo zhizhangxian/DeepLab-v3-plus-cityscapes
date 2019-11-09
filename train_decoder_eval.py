@@ -186,7 +186,7 @@ def train(verbose=True, **kwargs):
                     net.eval()
                     evaluator = MscEval(cfg)
                     mIOU, loss = evaluator(net, criteria=criteria, multi_scale=False)
-                    logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
+                    logger.info('mIOU is: {:4f}, loss_eval is {:4f}'.format(mIOU, loss))
                     net.train()
                 else:
                     net.cpu()
@@ -207,7 +207,7 @@ def train(verbose=True, **kwargs):
                     net.eval()
                     evaluator = MscEval(cfg)
                     mIOU, loss = evaluator(net, criteria=criteria, multi_scale=False)
-                    logger.info('mIOU is: {}, loss_eval is {}'.format(mIOU, loss))
+                    logger.info('mIOU is: {:4f}, loss_eval is {:4f}'.format(mIOU, loss))
                     net.train()
                 else:
                     net.cpu()

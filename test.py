@@ -1,9 +1,9 @@
+from thop import profile
 from configs.configurations import Config
 from configs.basic_args import obtain_search_args
 from models.autodecoder.deeplab_deocder import Deeplab_v3plus
 
 # from models.deeplabv3plus import Deeplab_v3plus
-
 
 
 # from models.deeplabv3plus import Deeplab_v3plus as Deeplab_v3plus_naive
@@ -15,7 +15,7 @@ print(arch)
 
 net_arch = arch['net_arch']
 ops_list = arch['ops_list']
-skip_list = arch['skip_list'] 
+skip_list = arch['skip_list']
 
 args = obtain_search_args()
 cfg = Config()
@@ -27,7 +27,6 @@ model.train()
 
 x = torch.randn(2, 3, 128, 128).cuda()
 
-from thop import profile
 
 params, flops = profile(model=model, inputs=(x,))
 
