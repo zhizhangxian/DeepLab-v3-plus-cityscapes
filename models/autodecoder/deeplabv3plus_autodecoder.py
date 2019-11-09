@@ -75,8 +75,8 @@ class AutoDecoder(nn.Module):
         self.filter_param_dict = {0: 1, 1: 2, 2: 4, 3: 8}
         self.decoder_cells = self._get_decoder(self.ops_list, self.net_arch, self.skip_feature_list, args)
 
-        self.C_last = self._filter_multiplier * self._block_multiplier * self.filter_param_dict[self.net_arch[-1]]
-        self.output_conv = nn.Conv2d(self.C_last, self._num_classes, 1, bias=False)
+        # self.C_last = self._filter_multiplier * self._block_multiplier * self.filter_param_dict[self.net_arch[-1]]
+        self.output_conv = nn.Conv2d(256, self._num_classes, 1, bias=False)
 
     @staticmethod
     def _build_encoder(args):
@@ -97,25 +97,22 @@ class AutoDecoder(nn.Module):
         C_in = args.block_multiplier * args.filter_multiplier * self.filter_param_dict[net_arch[0]]
 
         for i, arch in enumerate(net_arch):
-
-            if i == 4:
-                print(i)
             # C_in = args.block_multiplier * args.filter_multiplier * self.filter_param_dict[net_arch[i - 1]] if i else C_in
 
             if skip_feature_list[i] != -1:
 
                 C_skip = self._low_feature_list[skip_feature_list[i]]
                 if arch != prev_arch:
-                    C_out = C_in // 2
+                    C_out = C_in
                     cell = retrain_cell(C_in, C_out, C_skip, self.C_low, upsample=1, ops=ops_list[i])
-                    C_in = C_out
+                    # C_in = C_out
                 else:
                     cell = retrain_cell(C_in, C_in, C_skip, self.C_low, upsample=0, ops=ops_list[i])
             else:
                 if arch != prev_arch:
-                    C_out = C_in // 2
+                    C_out = C_in 
                     cell = retrain_cell(C_in, C_out, -1, -1, upsample=1, ops=ops_list[i])
-                    C_in = C_out
+                    # C_in = C_out
                 else:
                     cell = retrain_cell(C_in, C_in, -1, -1, upsample=0, ops=ops_list[i])
             prev_arch = arch
@@ -132,5 +129,4 @@ class AutoDecoder(nn.Module):
                 skip_feature = None
 
             x = self.decoder_cells[i](x, skip_feature)
-            print(x.shape)
         return self.output_conv(x)

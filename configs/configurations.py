@@ -35,6 +35,7 @@ class Config(object):
         self.msg_iter = 100
         self.eval_iter = 10
         self.ohem_thresh = 0.7
+        self.arch_pth = './net_arch/new_Standard_result.pth.tar'
         self.respth = './res'
         self.port = 32168
         # eval control
@@ -44,7 +45,6 @@ class Config(object):
         self.eval_scale = (1.0,)
         self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75)
         self.eval_flip = True
-
 
 def set_seed(seed):
     random.seed(seed)
