@@ -121,9 +121,9 @@ def train(verbose=True, **kwargs):
     diter = iter(dl)
     n_epoch = 0
     
-    cfg.eval_iter = len(dl) // torch.cuda.device_count()
     
     for it in range(cfg.max_iter):
+        cfg.eval_iter = len(dl) // torch.cuda.device_count() if it < int(cfg.max_iter * 0.7) else (len(dl) * 2)
         try:
             im, lb = next(diter)
             if not im.size()[0] == cfg.ims_per_gpu:
