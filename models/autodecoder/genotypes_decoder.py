@@ -7,7 +7,8 @@ PRIMITIVES = [
     'conv3x3',
     'conv5x5',
     'conv3x3x2',
-    'conv3x3_conv5x5',
-    'conv3x3_conv5x5',
-    'conv3x3_conv5x5',
+    'dil_conv_3x3',
+    'dil_conv_5x5',
+    'bottle_3x3',
+    'bottle_5x5',
 ]

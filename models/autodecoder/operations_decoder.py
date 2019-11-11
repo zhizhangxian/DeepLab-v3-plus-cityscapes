@@ -6,16 +6,18 @@ if platform.system() == 'Windows':
 else:
     print("=> warning! using ABN")
     from modules import InPlaceABNSync as BatchNorm2d
-
+    
 OPS = {
     'identity': lambda C_in, C_out, stride, affine: Identity(C_in, C_out, stride, affine),
     'conv3x3': lambda C_in, C_out, stride, affine: ConvBNReLU(C_in, C_out, 3, stride, 1, 1, affine=affine),
     'conv5x5': lambda C_in, C_out, stride, affine: ConvBNReLU(C_in, C_out, 5, stride, 2, 1, affine=affine),
-    'conv3x3x2': lambda C_in, C_out, stride, affine: nn.Sequential(ConvBNReLU(C_in, C_out, 3, stride, 1, 1, affine=affine),
-                                                                   ConvBNReLU(C_out, C_out, 3, stride, 1, 1, affine=affine)),
-    'conv3x3_conv5x5': lambda C_in, C_out, stride, affine: nn.Sequential(ConvBNReLU(C_in, C_out, 3, stride, 1, 1, affine=affine),
-                                                                         ConvBNReLU(C_out, C_out, 5, stride, 2, 1, affine=affine)),
+    'conv3x3x2': lambda C_in, C_out, stride, affine: nn.Sequential(ConvBNReLU(C_in, C_out, 3, stride, 1, 1, affine=affine), ConvBNReLU(C_out, C_out, 3, stride, 1, 1, affine=affine)),
+    'dil_conv_3x3': lambda C_in, C_out, stride, affine: DilConv(C_in, C_out, 3, stride, 2, 2, affine=affine, use_ABN=True),
+    'dil_conv_5x5': lambda C_in, C_out, stride, affine: DilConv(C_in, C_out, 5, stride, 4, 2, affine=affine, use_ABN=True), 
+    'bottle_3x3': lambda C_in, C_out, stride, affine: SepConv(C_in, C_out, 3, stride, 1, True, True),
+    'bottle_5x5': lambda C_in, C_out, stride, affine: SepConv(C_in, C_out, 5, stride, 2, True, True),
 }
+
 
 
 class ConvBNReLU(nn.Module):
