@@ -33,7 +33,7 @@ class Config(object):
         self.saturation = 0.5
         self.ims_per_gpu = 4
         self.msg_iter = 100
-        self.eval_iter = 20
+        self.eval_iter = 50
         self.ohem_thresh = 0.7
         self.arch_pth = './net_arch/new_Standard_result.pth.tar'
         self.respth = './res'
