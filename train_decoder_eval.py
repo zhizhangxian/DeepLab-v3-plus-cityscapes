@@ -93,7 +93,7 @@ def train(verbose=True, **kwargs):
         print('now the ops list is : ', ops_list)
         print('now the skip list is : ', skip_list)
 
-    net = Deeplab_v3plus(cfg,args)
+    net = Deeplab_v3plus(cfg,args,ops_list,net_arch,skip_list)
     net.train()
     net.cuda()
     net = nn.parallel.DistributedDataParallel(net,
@@ -123,7 +123,7 @@ def train(verbose=True, **kwargs):
     
     
     for it in range(cfg.max_iter):
-        cfg.eval_iter = len(dl) // torch.cuda.device_count() if it < int(cfg.max_iter * 0.7) else (len(dl) * 2)
+        cfg.eval_iter = len(dl) // torch.cuda.device_count() if it >= int(cfg.max_iter * 0.7) else (len(dl) * 2)
         try:
             im, lb = next(diter)
             if not im.size()[0] == cfg.ims_per_gpu:
@@ -237,6 +237,5 @@ def train(verbose=True, **kwargs):
 
 
 if __name__ == "__main__":
-    # args = parse_args()
-    args = obtain_search_args
+    args = obtain_search_args()
     train(args=args)

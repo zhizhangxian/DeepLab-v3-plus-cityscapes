@@ -32,6 +32,11 @@ class retrain_cell(nn.Module):
             feature_size_h = self.scale_dimension(prev_feature.shape[2], 2)
             feature_size_w = self.scale_dimension(prev_feature.shape[3], 2)
 
+        elif mode == 'upup':
+
+            feature_size_h = self.scale_dimension(prev_feature.shape[2], 4)
+            feature_size_w = self.scale_dimension(prev_feature.shape[3], 4)
+
         else:
             raise NotImplementedError
 
@@ -110,7 +115,7 @@ class AutoDecoder(nn.Module):
                     cell = retrain_cell(C_in, C_in, C_skip, self.C_low, upsample=0, ops=ops_list[i])
             else:
                 if arch != prev_arch:
-                    C_out = C_in 
+                    C_out = C_in
                     cell = retrain_cell(C_in, C_out, -1, -1, upsample=1, ops=ops_list[i])
                     # C_in = C_out
                 else:
@@ -122,7 +127,7 @@ class AutoDecoder(nn.Module):
     def forward(self, x, low_level_feature_list):
 
         for i in range(self._num_layers):
-            
+
             if self.skip_feature_list[i] != -1:
                 skip_feature = low_level_feature_list[self.skip_feature_list[i]]
             else:

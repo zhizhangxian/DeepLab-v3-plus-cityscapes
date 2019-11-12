@@ -14,7 +14,7 @@ class Config(object):
         self.n_classes = 19
         self.datapth = '/dataset/Cityscapes_dataset/'
         self.n_workers = 4
-        self.crop_size = (769, 769)
+        self.crop_size = (768, 768)
         self.mean = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
         # optimizer
@@ -33,7 +33,7 @@ class Config(object):
         self.saturation = 0.5
         self.ims_per_gpu = 4
         self.msg_iter = 100
-        self.eval_iter = 10
+        self.eval_iter = 20
         self.ohem_thresh = 0.7
         self.arch_pth = './net_arch/new_Standard_result.pth.tar'
         self.respth = './res'
