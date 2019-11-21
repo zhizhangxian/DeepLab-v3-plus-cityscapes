@@ -9,7 +9,9 @@ import torch.nn.functional as F
 import torchvision
 import torch.utils.checkpoint as ckpt
 
-from modules import InPlaceABNSync as BatchNorm2d
+# from modules import InPlaceABNSync as BatchNorm2d
+from inplace_abn import InPlaceABNSync as BatchNorm2d
+
 
 
 class ConvBNReLU(nn.Module):

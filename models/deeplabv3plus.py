@@ -14,7 +14,8 @@ if platform.system() is 'Windows':
     from torch.nn import BatchNorm2d
     print('=>Warning!  Using naive BN now!')
 else:
-    from modules import InPlaceABNSync as BatchNorm2d
+    # from modules import InPlaceABNSync as BatchNorm2d
+    from inplace_abn import InPlaceABNSync as BatchNorm2d
     print('=>Using ABN now')
 
 

@@ -13,7 +13,9 @@ from models.resnet import Resnet101
 if platform.system() is 'Windows':
     from torch.nn import BatchNorm2d
 else:
-    from modules import InPlaceABNSync as BatchNorm2d
+    # from modules import InPlaceABNSync as BatchNorm2d
+    from inplace_abn import InPlaceABNSync as BatchNorm2d
+
 
 
 class ConvBNReLU(nn.Module):

@@ -12,8 +12,9 @@ import torch.utils.model_zoo as modelzoo
 if platform.system() is 'Windows':
     from torch.nn import BatchNorm2d
 else:
-    from modules import InPlaceABNSync as BatchNorm2d
-
+    # from modules import InPlaceABNSync as BatchNorm2d
+    from inplace_abn import InPlaceABNSync as BatchNorm2d
+    
 # from torch.nn import BatchNorm2d
 
 resnet18_url = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
