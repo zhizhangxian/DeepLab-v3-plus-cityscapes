@@ -13,7 +13,7 @@ class Config(object):
         self.n_classes = 19
         self.datapth = '/dataset/Cityscapes_dataset/'
         self.n_workers = 4
-        self.crop_size = (769, 769)
+        self.crop_size = (768, 768)
         self.mean = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
         # optimizer

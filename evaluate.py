@@ -60,8 +60,8 @@ class MscEval(object):
         else:
             diter = enumerate(tqdm(self.dl))
 
-        if criteria is not None
-        loss_avg = []
+        if criteria is not None:
+            loss_avg = []
         for i, (imgs, label) in diter:
             N, _, H, W = label.shape
             probs = torch.zeros((N, self.cfg.n_classes, H, W))
@@ -85,7 +85,7 @@ class MscEval(object):
 
                     if criteria is not None:
                         loss_avg.append(loss.item())
-                        loss = criteria(out, torch.squeeze(lb, 1))
+                        loss = criteria(out, torch.squeeze(label.cuda(), 1))
 
                     del out, prob
             probs = probs.data.numpy()
