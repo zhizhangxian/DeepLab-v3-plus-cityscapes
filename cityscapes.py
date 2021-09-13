@@ -17,7 +17,7 @@ from transform import *
 
 
 class CityScapes(Dataset):
-    def __init__(self, cfg, mode='train', *args, **kwargs):
+    def __init__(self, cfg, mode='train', num_copys=1, *args, **kwargs):
         super(CityScapes, self).__init__(*args, **kwargs)
         assert mode in ('train', 'val', 'test')
         self.mode = mode
@@ -61,19 +61,34 @@ class CityScapes(Dataset):
         assert set(self.imnames) == set(self.labels.keys())
 
         ## pre-processing
-        self.to_tensor = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(cfg.mean, cfg.std),
-            ])
-        self.trans = Compose([
-            ColorJitter(
-                brightness = cfg.brightness,
-                contrast = cfg.contrast,
-                saturation = cfg.saturation),
-            HorizontalFlip(),
-            RandomScale(cfg.scales),
-            RandomCrop(cfg.crop_size)
-            ])
+        if num_copys == 1:
+            self.to_tensor = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(cfg.mean, cfg.std),
+                ])
+
+            self.trans = Compose([
+                ColorJitter(
+                    brightness = cfg.brightness,
+                    contrast = cfg.contrast,
+                    saturation = cfg.saturation),
+                RandomScale(cfg.scales),
+                RandomCrop(cfg.crop_size),
+                HorizontalFlip(),
+
+                ])
+        elif num_copys == 2:
+            self.to_tensor = Pair_ToTensor()
+
+            self.trans = Compose([
+                Pair_ColorJitter(
+                    brightness = cfg.brightness,
+                    contrast = cfg.contrast,
+                    saturation = cfg.saturation),
+                Pair_RandomScale(cfg.scales),
+                Pair_RandomCrop(cfg.crop_size),
+                Pair_HorizontalFlip(),
+                ])
 
 
     def __getitem__(self, idx):
@@ -91,7 +106,6 @@ class CityScapes(Dataset):
         label = self.convert_labels(label)
         return imgs, label
 
-
     def __len__(self):
         return self.len
 
@@ -100,6 +114,8 @@ class CityScapes(Dataset):
         for k, v in self.lb_map.items():
             label[label == k] = v
         return label
+
+
 
 
 if __name__ == "__main__":

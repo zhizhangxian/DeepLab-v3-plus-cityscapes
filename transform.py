@@ -32,6 +32,18 @@ class RandomCrop(object):
                     )
 
 
+class Pair_RandomCrop(RandomCrop):
+    def __init__(self, size, *args, **kwargs):
+        super(Pair_RandomCrop, self).__init__(size, *args, **kwargs)
+    
+    def __call__(self, im_lbs):
+        ims = im_lbs['im']
+        lbs = im_lbs['lb']
+        ori_cor = im_lbs['ori_cor']
+        
+        return 
+
+
 class HorizontalFlip(object):
     def __init__(self, p = 0.5, *args, **kwargs):
         self.p = p
