@@ -59,13 +59,13 @@ class CityScapes(Dataset):
         assert set(imgnames) == set(gtnames)
         assert set(self.imnames) == set(self.imgs.keys())
         assert set(self.imnames) == set(self.labels.keys())
-
+        
+        self.to_tensor = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(cfg.mean, cfg.std),
+            ])
         ## pre-processing
         if num_copys == 1:
-            self.to_tensor = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(cfg.mean, cfg.std),
-                ])
 
             self.trans = Compose([
                 ColorJitter(
@@ -78,18 +78,19 @@ class CityScapes(Dataset):
 
                 ])
         elif num_copys == 2:
-            self.to_tensor = Pair_ToTensor()
-
+            self.to_tensor = Pair_ToTensor(self.to_tensor)
+            img_size = (1024,2048)
             self.trans = Compose([
+                Pair_RandomScale(cfg.scales, img_size),
                 Pair_ColorJitter(
                     brightness = cfg.brightness,
                     contrast = cfg.contrast,
                     saturation = cfg.saturation),
-                Pair_RandomScale(cfg.scales),
                 Pair_RandomCrop(cfg.crop_size),
                 Pair_HorizontalFlip(),
                 ])
 
+        self.num_copys = num_copys
 
     def __getitem__(self, idx):
         fn  = self.imnames[idx]
@@ -101,10 +102,18 @@ class CityScapes(Dataset):
             im_lb = dict(im = img, lb = label)
             im_lb = self.trans(im_lb)
             img, label = im_lb['im'], im_lb['lb']
-        imgs = self.to_tensor(img)
-        label = np.array(label).astype(np.int64)[np.newaxis, :]
-        label = self.convert_labels(label)
-        return imgs, label
+
+        if self.num_copys == 1:
+            imgs = self.to_tensor(img)
+            label = np.array(label).astype(np.int64)[np.newaxis, :]
+            label = self.convert_labels(label)
+            return imgs, label
+
+        else:
+            im_lb = self.to_tensor(im_lb)
+            return im_lb
+            
+
 
     def __len__(self):
         return self.len
@@ -116,12 +125,35 @@ class CityScapes(Dataset):
         return label
 
 
+def collate_fn2(batchs):
+    _imgs = []
+    _targets = []
+    _overlaps = []
+    flips = []
+    for index, batch in enumerate(batchs):
+        _overlaps.append([])
+        imgs, targets, overlaps, flip = batch['im'], batch['lb'], batch['overlap'], batch['flip']
+        flips.append(flip)
+        for i in range(len(imgs)):
+            # print('index: {:}, i: {:}'.format(index, i))
+            _imgs.append(torch.unsqueeze(imgs[i], 0))
+            _targets.append(torch.unsqueeze(targets[i], 0))
+            _overlaps[index].append(overlaps[i])
+    return torch.cat(_imgs, dim=0), torch.cat(_targets, dim=0), _overlaps, flips
+
+
+
 
 
 if __name__ == "__main__":
     from tqdm import tqdm
     from torch.utils.data import DataLoader
-    ds = CityScapes('./data/', mode='val')
+    import os
+    os.chdir('../')
+    from configs.configurations import Config
+
+    cfg = Config()
+    ds = CityScapes(cfg, mode='val')
     dl = DataLoader(ds,
                     batch_size = 4,
                     shuffle = True,

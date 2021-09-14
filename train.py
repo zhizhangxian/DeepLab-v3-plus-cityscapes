@@ -7,7 +7,7 @@ from models.deeplabv3plus import Deeplab_v3plus
 from cityscapes import CityScapes
 from evaluate import MscEval
 from optimizer import Optimizer
-from loss import OhemCELoss
+from loss import OhemCELoss, pgc_loss
 from configs import config_factory
 
 import torch
@@ -71,7 +71,7 @@ def train(verbose=True, **kwargs):
             )
     n_min = cfg.ims_per_gpu*cfg.crop_size[0]*cfg.crop_size[1]//16
     criteria = OhemCELoss(thresh=cfg.ohem_thresh, n_min=n_min).cuda()
-
+    Criterion = pgc_loss(use_pgc = [0,1,2], criteria=criteria)
     ## optimizer
     optim = Optimizer(
             net,
@@ -83,7 +83,7 @@ def train(verbose=True, **kwargs):
             cfg.max_iter,
             cfg.lr_power
             )
-
+    alpha, beta = cfg.alpha, cfg.beta
     ## train loop
     loss_avg = []
     st = glob_st = time.time()
@@ -91,13 +91,13 @@ def train(verbose=True, **kwargs):
     n_epoch = 0
     for it in range(cfg.max_iter):
         try:
-            im, lb = next(diter)
+            im, lb, overlap, flip = next(diter)
             if not im.size()[0]==cfg.ims_per_gpu: continue
         except StopIteration:
             n_epoch += 1
             sampler.set_epoch(n_epoch)
             diter = iter(dl)
-            im, lb = next(diter)
+            im, lb, overlap, flip = next(diter)
         im = im.cuda()
         lb = lb.cuda()
 
@@ -105,8 +105,18 @@ def train(verbose=True, **kwargs):
         lb = torch.squeeze(lb, 1)
 
         optim.zero_grad()
-        logits = net(im)
-        loss = criteria(logits, lb)
+        im1, im2 = im[::2], im[1::2]
+        logits1 = net(im1)
+        logits2 = net(im2)
+
+        outputs = []
+        for f1, f2 in zip(logits1, logits2):
+            outputs.append([f1, f2])
+        # loss = criteria(logits, lb)
+        mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+        loss = beta * sym_ce + ce
+        gc_loss = sum(mid_mse)
+        loss += alpha * gc_loss
         loss.backward()
         optim.step()
 
