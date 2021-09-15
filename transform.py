@@ -88,20 +88,41 @@ class Pair_RandomCrop(RandomCrop):
 
         return overlaps
 
-    def __call__(self, im_lbs):
-        ims = im_lbs['im']
-        lbs = im_lbs['lb']
+
+    @staticmethod
+    def good_sample(ori_cors):
+        up = max(ori_cors[0][0], ori_cors[1][0])
+        left = max(ori_cors[0][1], ori_cors[1][1])
+        down = max(min(ori_cors[0][2], ori_cors[1][2]), up)
+        right = max(min(ori_cors[0][3], ori_cors[1][3]), left)
+        good_sample = True if (up < down and left < right) else False
+        return good_sample
+
+
+    def sample(self, ims, lbs):
+        _ims = []
+        _lbs = []
         cur_cors = []
         ori_cors = []
-        for i, (im, lb) in enumerate(zip(ims, lbs)):
+        for im, lb in zip(ims, lbs):
             im, lb, cur_cor, ori_cor = RandomCrop.mini_call(self, im, lb)
-            ims[i] = im
-            lbs[i] = lb
+            _ims.append(im)
+            _lbs.append(lb)
             cur_cors.append(cur_cor)
             ori_cors.append(ori_cor)
         overlaps = self.get_overlaps(cur_cors, ori_cors)
-            
-        return dict(im=ims, lb=lbs, overlap=overlaps)
+
+
+        if self.good_sample(ori_cors):
+            return dict(im=_ims, lb=_lbs, overlap=overlaps)
+        else:
+            return self.sample(ims, lbs)
+
+    def __call__(self, im_lbs):
+        ims = im_lbs['im']
+        lbs = im_lbs['lb']
+
+        return self.sample(ims, lbs)
 
 
 class HorizontalFlip(object):
@@ -163,6 +184,7 @@ class Pair_RandomScale(RandomScale):
         self.scales = scales
         self.H = img_size[0]
         self.W = img_size[1]
+
 
     def __call__(self, im_lb):
         im_lb, scale = RandomScale.__call__(self, im_lb)
