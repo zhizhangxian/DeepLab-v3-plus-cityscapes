@@ -4,7 +4,7 @@
 
 from logger import *
 from models.deeplabv3plus import Deeplab_v3plus
-from cityscapes import CityScapes
+from cityscapes import CityScapes, collate_fn2
 from evaluate import MscEval
 from optimizer import Optimizer
 from loss import OhemCELoss, pgc_loss
@@ -51,13 +51,14 @@ def train(verbose=True, **kwargs):
     logger = logging.getLogger()
 
     ## dataset
-    ds = CityScapes(cfg, mode='train')
+    ds = CityScapes(cfg, mode='train', num_copys=2)
     sampler = torch.utils.data.distributed.DistributedSampler(ds)
     dl = DataLoader(ds,
                     batch_size = cfg.ims_per_gpu,
                     shuffle = False,
                     sampler = sampler,
                     num_workers = cfg.n_workers,
+                    collate_fn=collate_fn2,
                     pin_memory = True,
                     drop_last = True)
 
@@ -86,13 +87,20 @@ def train(verbose=True, **kwargs):
     alpha, beta = cfg.alpha, cfg.beta
     ## train loop
     loss_avg = []
+    pgc_avg = []
+    ce_avg = []
+    ssp_avg = []
+
     st = glob_st = time.time()
     diter = iter(dl)
     n_epoch = 0
     for it in range(cfg.max_iter):
+        if dist.get_rank() == 0:
+            logger.info(it)
         try:
             im, lb, overlap, flip = next(diter)
-            if not im.size()[0]==cfg.ims_per_gpu: continue
+            if not im.size()[0]!=cfg.ims_per_gpu // 2:
+                continue
         except StopIteration:
             n_epoch += 1
             sampler.set_epoch(n_epoch)
@@ -117,10 +125,14 @@ def train(verbose=True, **kwargs):
         loss = beta * sym_ce + ce
         gc_loss = sum(mid_mse)
         loss += alpha * gc_loss
+        logger.info(loss)
         loss.backward()
         optim.step()
 
         loss_avg.append(loss.item())
+        ohem_avg.append(ce.item())
+        pgc_avg.append(gc_loss.item())
+        ssp_avg.append(sym_ce.item())
         ## print training log message
         if it%cfg.msg_iter==0 and not it==0:
             loss_avg = sum(loss_avg) / len(loss_avg)
@@ -133,6 +145,9 @@ def train(verbose=True, **kwargs):
                     'iter: {it}/{max_it}',
                     'lr: {lr:4f}',
                     'loss: {loss:.4f}',
+                    'ohem: {ohem:.4f}', 
+                    'pgc: {pgc:.4f}', 
+                    'ssp: {ssp:.4f}',
                     'eta: {eta}',
                     'time: {time:.4f}',
                 ]).format(
@@ -145,6 +160,9 @@ def train(verbose=True, **kwargs):
                 )
             logger.info(msg)
             loss_avg = []
+            pgc_avg = []
+            ssp_avg = []
+            ohem_avg = []
             st = ed
 
     ## dump the final model and evaluate the result

@@ -11,7 +11,7 @@ class Config(object):
         self.aspp_global_feature = False
         # dataset
         self.n_classes = 19
-        self.datapth = '/dataset/Cityscapes_dataset/'
+        self.datapth = '/seu_share/home/wkyang/datasets/cityscapes'
         self.n_workers = 4
         self.crop_size = (768, 768)
         self.mean = (0.485, 0.456, 0.406)

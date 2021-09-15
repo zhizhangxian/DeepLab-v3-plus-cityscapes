@@ -114,3 +114,18 @@ bayesian_search.py
 evaluate.py.old
 *png
 infer.py
+
+
+
+## Coin: 
+data
+data/
+play.py
+preprocess_data.py
+res/
+labels.py
+adj.md
+bayesian_search.py
+evaluate.py.old
+*png
+infer.py

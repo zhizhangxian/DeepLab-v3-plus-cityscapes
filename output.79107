@@ -1,0 +1,130 @@
+Sender: LSF System <lsfadmin@gpu16>
+Subject: Job 79107: <cityscapes_baseline> in cluster <cluster1> Exited
+
+Job <cityscapes_baseline> was submitted from host <login02> by user <wkyang> in cluster <cluster1> at Wed Sep 15 11:17:38 2021
+Job was executed on host(s) <6*gpu16>, in queue <gpu_v100>, as user <wkyang> in cluster <cluster1> at Wed Sep 15 11:17:38 2021
+</seu_share/home/wkyang> was used as the home directory.
+</seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes> was used as the working directory.
+Started at Wed Sep 15 11:17:38 2021
+Terminated at Wed Sep 15 11:18:06 2021
+Results reported at Wed Sep 15 11:18:06 2021
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+
+#BSUB -J cityscapes_baseline
+#BSUB -q gpu_v100
+#BSUB -gpu "num=2:mode=exclusive_process:aff=yes"
+
+conda activate py37
+python -m torch.distributed.launch --nproc_per_node=2 train.py
+
+
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   15.74 sec.
+    Max Memory :                                 1118 MB
+    Average Memory :                             604.00 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              6
+    Max Threads :                                12
+    Run time :                                   28 sec.
+    Turnaround time :                            28 sec.
+
+The output (if any) follows:
+
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+Traceback (most recent call last):
+  File "train.py", line 167, in <module>
+    train(args=args)
+  File "train.py", line 94, in train
+    im, lb, overlap, flip = next(diter)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 819, in __next__
+Traceback (most recent call last):
+  File "train.py", line 167, in <module>
+    train(args=args)
+  File "train.py", line 94, in train
+    im, lb, overlap, flip = next(diter)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 819, in __next__
+    return self._process_data(data)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 846, in _process_data
+    data.reraise()
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/_utils.py", line 369, in reraise
+    return self._process_data(data)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 846, in _process_data
+    data.reraise()
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/_utils.py", line 369, in reraise
+    raise self.exc_type(msg)
+TypeError: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/worker.py", line 178, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/cityscapes.py", line 103, in __getitem__
+    im_lb = self.trans(im_lb)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/transform.py", line 245, in __call__
+    im_lb = comp(im_lb)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/transform.py", line 18, in __call__
+    im = im_lb['im']
+TypeError: tuple indices must be integers or slices, not str
+
+    raise self.exc_type(msg)
+TypeError: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/worker.py", line 178, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/cityscapes.py", line 103, in __getitem__
+    im_lb = self.trans(im_lb)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/transform.py", line 245, in __call__
+    im_lb = comp(im_lb)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/transform.py", line 18, in __call__
+    im = im_lb['im']
+TypeError: tuple indices must be integers or slices, not str
+
+Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/distributed/launch.py", line 246, in <module>
+    main()
+  File "/seu_share/home/wkyang/anaconda3/envs/py37/lib/python3.7/site-packages/torch/distributed/launch.py", line 242, in main
+    cmd=cmd)
+subprocess.CalledProcessError: Command '['/seu_share/home/wkyang/anaconda3/envs/py37/bin/python', '-u', 'train.py', '--local_rank=1']' returned non-zero exit status 1.
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
