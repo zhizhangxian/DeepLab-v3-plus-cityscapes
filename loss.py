@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import numpy as np
+from math import floor
 
 
 
@@ -89,7 +90,7 @@ class ssp_loss_inner(new_ssp_loss):
 
 
         if downsamples != 1:
-            for i in range(8):
+            for i in range(len_img):
                 for j in range(2):
                     if (j == 0):
                         for k in range(2):
