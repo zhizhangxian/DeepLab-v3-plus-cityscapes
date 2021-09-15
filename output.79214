@@ -1,0 +1,125 @@
+Sender: LSF System <lsfadmin@gpu16>
+Subject: Job 79214: <cityscapes_baseline> in cluster <cluster1> Exited
+
+Job <cityscapes_baseline> was submitted from host <login02> by user <wkyang> in cluster <cluster1> at Wed Sep 15 18:12:11 2021
+Job was executed on host(s) <6*gpu16>, in queue <gpu_v100>, as user <wkyang> in cluster <cluster1> at Wed Sep 15 18:12:11 2021
+</seu_share/home/wkyang> was used as the home directory.
+</seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes> was used as the working directory.
+Started at Wed Sep 15 18:12:11 2021
+Terminated at Wed Sep 15 18:12:53 2021
+Results reported at Wed Sep 15 18:12:53 2021
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+
+#BSUB -J cityscapes_baseline
+#BSUB -q gpu_v100
+#BSUB -gpu "num=2:mode=exclusive_process:aff=yes"
+
+conda activate py37
+python -m torch.distributed.launch --nproc_per_node=2 train.py
+
+
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   38.00 sec.
+    Max Memory :                                 4391 MB
+    Average Memory :                             712.38 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   17592186044415 MB
+    Max Processes :                              14
+    Max Threads :                                36
+    Run time :                                   44 sec.
+    Turnaround time :                            42 sec.
+
+The output (if any) follows:
+
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+0
+torch.Size([19, 195, 768]) torch.Size([19, 195, 768])
+torch.Size([19, 56, 492]) torch.Size([19, 56, 492])
+torch.Size([19, 702, 589]) torch.Size([19, 702, 589])
+torch.Size([19, 411, 768]) torch.Size([19, 411, 768])
+Traceback (most recent call last):
+  File "train.py", line 184, in <module>
+    train(args=args)
+  File "train.py", line 123, in train
+    mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 160, in forward
+    mse, _, _, sym_ce, ce = new_ssp_loss.forward(self, outputs[-1], overlap, flips, labels)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 75, in forward
+    ce = self.ce_loss(Output, Labels)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/loss.py", line 961, in forward
+    return F.cross_entropy(input, target, weight=self.weight,
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/functional.py", line 2468, in cross_entropy
+    return nll_loss(log_softmax(input, 1), target, weight, None, ignore_index, None, reduction)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/functional.py", line 2266, in nll_loss
+    ret = torch._C._nn.nll_loss2d(input, target, weight, _Reduction.get_enum(reduction), ignore_index)
+RuntimeError: Expected object of scalar type Long but got scalar type Byte for argument #2 'target' in call to _thnn_nll_loss2d_forward
+torch.Size([19, 142, 676]) torch.Size([19, 142, 676])
+torch.Size([19, 1, 624]) torch.Size([19, 1, 624])
+torch.Size([19, 232, 325]) torch.Size([19, 232, 325])
+torch.Size([19, 496, 262]) torch.Size([19, 496, 262])
+Traceback (most recent call last):
+  File "train.py", line 184, in <module>
+    train(args=args)
+  File "train.py", line 123, in train
+    mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 160, in forward
+    mse, _, _, sym_ce, ce = new_ssp_loss.forward(self, outputs[-1], overlap, flips, labels)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 75, in forward
+    ce = self.ce_loss(Output, Labels)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/loss.py", line 961, in forward
+    return F.cross_entropy(input, target, weight=self.weight,
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/functional.py", line 2468, in cross_entropy
+    return nll_loss(log_softmax(input, 1), target, weight, None, ignore_index, None, reduction)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/functional.py", line 2266, in nll_loss
+    ret = torch._C._nn.nll_loss2d(input, target, weight, _Reduction.get_enum(reduction), ignore_index)
+RuntimeError: Expected object of scalar type Long but got scalar type Byte for argument #2 'target' in call to _thnn_nll_loss2d_forward
+Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 260, in <module>
+    main()
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 255, in main
+    raise subprocess.CalledProcessError(returncode=process.returncode,
+subprocess.CalledProcessError: Command '['/seu_share/home/wkyang/anaconda3/bin/python', '-u', 'train.py', '--local_rank=1']' returned non-zero exit status 1.
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************

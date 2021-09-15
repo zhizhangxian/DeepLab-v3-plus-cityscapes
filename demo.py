@@ -39,27 +39,30 @@ def get_hw(overlap):
 
 if __name__ == '__main__':
     cfg = Config()
-    cfg.datapth = r'D:\datasets\cityscapes'
+    # cfg.datapth = r'D:\datasets\cityscapes'
     ds = CityScapes(cfg, mode='train', num_copys=2)
-    for i in range(100):
-        sample = ds[0]
-        overlap1, overlap2 = sample['overlap']
+    # for i in range(100):
+    #     sample = ds[0]
+    #     overlap1, overlap2 = sample['overlap']
 
 
-        h1, w1 = get_hw(overlap1)
-        h2, w2 = get_hw(overlap2)
-        print((h1 == h2) and (w1 == w2))
-        print(h1, w1)
+    #     h1, w1 = get_hw(overlap1)
+    #     h2, w2 = get_hw(overlap2)
+    #     print((h1 == h2) and (w1 == w2))
+    #     print(h1, w1)
 
-    # dl = DataLoader(ds,
-    #                 batch_size = 4,
-    #                 shuffle = True,
-    #                 num_workers = 4,
-    #                 collate_fn=collate_fn2,
-    #                 drop_last = True)
-    # for im_lb in dl:
-    #     print(im_lb)
-    #     break
+    dl = DataLoader(ds,
+                    batch_size = 4,
+                    shuffle = True,
+                    num_workers = 4,
+                    collate_fn=collate_fn2,
+                    drop_last = True)
+    for im_lb in dl:
+        im = im_lb[0]
+        lb = im_lb[1]
+        print(im.shape)
+        print(lb.shape)
+        break
 
 # import torch
 # import torch.nn as nn

@@ -15,7 +15,7 @@ from math import floor
 class new_ssp_loss(nn.Module):
     def __init__(self, exclusive=True, ignore_index=255, criteria=None):
         super(new_ssp_loss, self).__init__()
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=255) if criteria is None else criteria
+        self.ce_loss = nn.CrossEntropyLoss(ignore_index=255)# if criteria is None else criteria
         self.mse_loss = nn.MSELoss()
         self.L1_loss = nn.L1Loss()
         self.ignore_index = ignore_index
@@ -35,6 +35,8 @@ class new_ssp_loss(nn.Module):
             img_1 = output1[i, :, overlap[i][0][0][0]:overlap[i][0][1][0], overlap[i][0][0][1]:overlap[i][0][1][1]]
             img_2 = output2[i, :, overlap[i][1][0][0]:overlap[i][1][1][0], overlap[i][1][0][1]:overlap[i][1][1][1]]
 
+
+
             ex_labels[2 * i, overlap[i][0][0][0]:overlap[i][0][1][0], overlap[i][0][0][1]:overlap[i][0][1][1]] = self.ignore_index
             ex_labels[2 * i + 1, overlap[i][1][0][0]:overlap[i][1][1][0], overlap[i][1][0][1]:overlap[i][1][1][1]] = self.ignore_index
 
@@ -49,6 +51,7 @@ class new_ssp_loss(nn.Module):
                 img_1_label = img_1.argmax(dim=0).unsqueeze(0).requires_grad_(False)
                 img_2_label = img_2.argmax(dim=0).unsqueeze(0).requires_grad_(False)
                 mse_loss = self.mse_loss(img_1, img_2)
+
                 ce_loss_1_2 = self.ce_loss(img_1.unsqueeze(0), img_2_label)
                 ce_loss_2_1 = self.ce_loss(img_2.unsqueeze(0), img_1_label)
                 sym_ce_loss = 0.5 * ce_loss_1_2 + 0.5 * ce_loss_2_1
@@ -67,6 +70,7 @@ class new_ssp_loss(nn.Module):
         Labels = torch.cat([label1, label2], dim=0).detach()
         ex_labels = torch.cat([exlabel1, exlabel2], dim=0).detach()
         Output = torch.cat([outputs[0], outputs[1]], dim=0)
+
         ce = self.ce_loss(Output, Labels)
         #
         ex_ce = self.ce_loss(Output, ex_labels)
@@ -117,7 +121,7 @@ class ssp_loss_inner(new_ssp_loss):
 
             if flips[i] == -1:
                 img_2 = torch.flip(img_2, [2])
-
+    
             if ((shape_1[0] < 1) or (shape_1[1] < 1) or (shape_2[0] < 1) or (shape_2[1] < 1)):
                 mse_loss = 0
                 ce_loss_1_2 = 0

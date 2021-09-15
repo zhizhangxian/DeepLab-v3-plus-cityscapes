@@ -7,6 +7,9 @@ import PIL.ImageEnhance as ImageEnhance
 import json
 import random
 import numpy as np
+
+
+import torch
 import torchvision.transforms as transforms
 
 
@@ -276,7 +279,6 @@ class Pair_ToTensor(object):
         with open('./cityscapes_info.json', 'r') as fr:
             labels_info = json.load(fr)
         self.lb_map = {el['id']: el['trainId'] for el in labels_info}
-        self.To_tensor = transforms.ToTensor()
 
 
     def convert_labels(self, label):
@@ -293,7 +295,7 @@ class Pair_ToTensor(object):
             im = self.to_tensor(im)
             lb = np.array(lb).astype(np.int64)[np.newaxis, :]
             lb = self.convert_labels(lb)
-            lb = self.To_tensor(lb)
+            lb = torch.from_numpy(lb)
             ims[i] = im
             lbs[i] = lb
         return im_lb

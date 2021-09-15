@@ -111,7 +111,6 @@ def train(verbose=True, **kwargs):
 
         H, W = im.size()[2:]
         lb = torch.squeeze(lb, 1)
-
         optim.zero_grad()
         im1, im2 = im[::2], im[1::2]
         logits1 = net(im1)
@@ -120,13 +119,18 @@ def train(verbose=True, **kwargs):
         outputs = []
         for f1, f2 in zip(logits1, logits2):
             outputs.append([f1, f2])
+        logits = torch.cat([logits1[-1], logits2[-1]], dim=0)
         # loss = criteria(logits, lb)
-        mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
-        loss = beta * sym_ce + ce
-        gc_loss = sum(mid_mse)
-        loss += alpha * gc_loss
+
+        # mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+        loss = criteria(logits, lb)
+        # loss = beta * sym_ce + ce
+        # gc_loss = sum(mid_mse)
+        # loss += alpha * gc_loss
         logger.info(loss)
         loss.backward()
+        exit()
+
         optim.step()
 
         loss_avg.append(loss.item())

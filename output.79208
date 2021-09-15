@@ -1,0 +1,119 @@
+Sender: LSF System <lsfadmin@gpu16>
+Subject: Job 79208: <cityscapes_baseline> in cluster <cluster1> Exited
+
+Job <cityscapes_baseline> was submitted from host <login02> by user <wkyang> in cluster <cluster1> at Wed Sep 15 17:49:36 2021
+Job was executed on host(s) <6*gpu16>, in queue <gpu_v100>, as user <wkyang> in cluster <cluster1> at Wed Sep 15 17:49:36 2021
+</seu_share/home/wkyang> was used as the home directory.
+</seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes> was used as the working directory.
+Started at Wed Sep 15 17:49:36 2021
+Terminated at Wed Sep 15 17:50:16 2021
+Results reported at Wed Sep 15 17:50:16 2021
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+
+#BSUB -J cityscapes_baseline
+#BSUB -q gpu_v100
+#BSUB -gpu "num=2:mode=exclusive_process:aff=yes"
+
+conda activate py37
+python -m torch.distributed.launch --nproc_per_node=2 train.py
+
+
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   40.00 sec.
+    Max Memory :                                 6823 MB
+    Average Memory :                             1335.25 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              14
+    Max Threads :                                52
+    Run time :                                   40 sec.
+    Turnaround time :                            40 sec.
+
+The output (if any) follows:
+
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+0
+[[[[276, 0], [768, 768]], [[0, 0], [492, 768]]], [[[0, 264], [436, 768]], [[332, 0], [768, 504]]], [[[0, 0], [573, 768]], [[195, 0], [768, 768]]], [[[0, 0], [235, 768]], [[533, 0], [768, 768]]]]
+[[[[501, 172], [768, 768]], [[0, 0], [267, 596]]], [[[481, 0], [768, 740]], [[0, 28], [287, 768]]], [[[0, 0], [269, 714]], [[499, 54], [768, 768]]], [[[0, 0], [703, 283]], [[65, 485], [768, 768]]]]
+[[[[501, 172], [768, 768]], [[0, 0], [267, 596]]], [[[481, 0], [768, 740]], [[0, 28], [287, 768]]], [[[0, 0], [269, 714]], [[499, 54], [768, 768]]], [[[0, 0], [703, 283]], [[65, 485], [768, 768]]]] torch.Size([19, 267, 596]) torch.Size([1, 267, 596])
+[[[[501, 172], [768, 768]], [[0, 0], [267, 596]]], [[[481, 0], [768, 740]], [[0, 28], [287, 768]]], [[[0, 0], [269, 714]], [[499, 54], [768, 768]]], [[[0, 0], [703, 283]], [[65, 485], [768, 768]]]] torch.Size([19, 287, 740]) torch.Size([1, 287, 740])
+[[[[501, 172], [768, 768]], [[0, 0], [267, 596]]], [[[481, 0], [768, 740]], [[0, 28], [287, 768]]], [[[0, 0], [269, 714]], [[499, 54], [768, 768]]], [[[0, 0], [703, 283]], [[65, 485], [768, 768]]]] torch.Size([19, 269, 714]) torch.Size([1, 269, 714])
+[[[[501, 172], [768, 768]], [[0, 0], [267, 596]]], [[[481, 0], [768, 740]], [[0, 28], [287, 768]]], [[[0, 0], [269, 714]], [[499, 54], [768, 768]]], [[[0, 0], [703, 283]], [[65, 485], [768, 768]]]] torch.Size([19, 703, 283]) torch.Size([1, 703, 283])
+[[[[276, 0], [768, 768]], [[0, 0], [492, 768]]], [[[0, 264], [436, 768]], [[332, 0], [768, 504]]], [[[0, 0], [573, 768]], [[195, 0], [768, 768]]], [[[0, 0], [235, 768]], [[533, 0], [768, 768]]]] torch.Size([19, 492, 768]) torch.Size([1, 492, 768])
+Traceback (most recent call last):
+  File "train.py", line 186, in <module>
+    train(args=args)
+  File "train.py", line 125, in train
+    mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+[[[[276, 0], [768, 768]], [[0, 0], [492, 768]]], [[[0, 264], [436, 768]], [[332, 0], [768, 504]]], [[[0, 0], [573, 768]], [[195, 0], [768, 768]]], [[[0, 0], [235, 768]], [[533, 0], [768, 768]]]] torch.Size([19, 436, 504]) torch.Size([1, 436, 504])
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 163, in forward
+    mse1, sym_ce1, l11 = ssp_loss_inner.forward(self, outputs[i], overlap, flips, down_rate)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 134, in forward
+    ce_loss_1_2 = self.ce_loss(img_1.unsqueeze(0), img_2_label)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 180, in forward
+    N, C, H, W = logits.size()
+ValueError: too many values to unpack (expected 4)
+[[[[276, 0], [768, 768]], [[0, 0], [492, 768]]], [[[0, 264], [436, 768]], [[332, 0], [768, 504]]], [[[0, 0], [573, 768]], [[195, 0], [768, 768]]], [[[0, 0], [235, 768]], [[533, 0], [768, 768]]]] torch.Size([19, 573, 768]) torch.Size([1, 573, 768])
+[[[[276, 0], [768, 768]], [[0, 0], [492, 768]]], [[[0, 264], [436, 768]], [[332, 0], [768, 504]]], [[[0, 0], [573, 768]], [[195, 0], [768, 768]]], [[[0, 0], [235, 768]], [[533, 0], [768, 768]]]] torch.Size([19, 235, 768]) torch.Size([1, 235, 768])
+Traceback (most recent call last):
+  File "train.py", line 186, in <module>
+    train(args=args)
+  File "train.py", line 125, in train
+    mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 163, in forward
+    mse1, sym_ce1, l11 = ssp_loss_inner.forward(self, outputs[i], overlap, flips, down_rate)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 134, in forward
+    ce_loss_1_2 = self.ce_loss(img_1.unsqueeze(0), img_2_label)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes/loss.py", line 180, in forward
+    N, C, H, W = logits.size()
+ValueError: too many values to unpack (expected 4)
+Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 260, in <module>
+    main()
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 255, in main
+    raise subprocess.CalledProcessError(returncode=process.returncode,
+subprocess.CalledProcessError: Command '['/seu_share/home/wkyang/anaconda3/bin/python', '-u', 'train.py', '--local_rank=1']' returned non-zero exit status 1.
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************

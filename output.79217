@@ -1,0 +1,109 @@
+Sender: LSF System <lsfadmin@gpu16>
+Subject: Job 79217: <cityscapes_baseline> in cluster <cluster1> Exited
+
+Job <cityscapes_baseline> was submitted from host <login02> by user <wkyang> in cluster <cluster1> at Wed Sep 15 18:17:26 2021
+Job was executed on host(s) <6*gpu16>, in queue <gpu_v100>, as user <wkyang> in cluster <cluster1> at Wed Sep 15 18:17:27 2021
+</seu_share/home/wkyang> was used as the home directory.
+</seu_share/home/wkyang/code/2021/sep/15.sep/DeepLab-v3-plus-cityscapes> was used as the working directory.
+Started at Wed Sep 15 18:17:27 2021
+Terminated at Wed Sep 15 18:18:21 2021
+Results reported at Wed Sep 15 18:18:21 2021
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+
+#BSUB -J cityscapes_baseline
+#BSUB -q gpu_v100
+#BSUB -gpu "num=2:mode=exclusive_process:aff=yes"
+
+conda activate py37
+python -m torch.distributed.launch --nproc_per_node=2 train.py
+
+
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   44.63 sec.
+    Max Memory :                                 6913 MB
+    Average Memory :                             2512.80 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              14
+    Max Threads :                                52
+    Run time :                                   57 sec.
+    Turnaround time :                            55 sec.
+
+The output (if any) follows:
+
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+0
+torch.Size([19, 130, 768]) torch.Size([19, 130, 768])
+torch.Size([19, 307, 768]) torch.Size([19, 307, 768])
+torch.Size([19, 450, 768]) torch.Size([19, 450, 768])
+torch.Size([19, 397, 768]) torch.Size([19, 397, 768])
+tensor(4.2123, device='cuda:0', grad_fn=<AddBackward0>)
+torch.Size([19, 717, 687]) torch.Size([19, 717, 687])
+torch.Size([19, 638, 768]) torch.Size([19, 638, 768])
+torch.Size([19, 414, 37]) torch.Size([19, 414, 37])
+torch.Size([19, 586, 367]) torch.Size([19, 586, 367])
+Traceback (most recent call last):
+  File "train.py", line 184, in <module>
+    train(args=args)
+  File "train.py", line 128, in train
+    loss.backward()
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/tensor.py", line 221, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/autograd/__init__.py", line 130, in backward
+    Variable._execution_engine.run_backward(
+RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.cuda.FloatTensor [256]] is at version 4; expected version 3 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).
+Traceback (most recent call last):
+  File "train.py", line 184, in <module>
+    train(args=args)
+  File "train.py", line 128, in train
+    loss.backward()
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/tensor.py", line 221, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/autograd/__init__.py", line 130, in backward
+    Variable._execution_engine.run_backward(
+RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.cuda.FloatTensor [256]] is at version 4; expected version 3 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+Traceback (most recent call last):
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 260, in <module>
+    main()
+  File "/seu_share/home/wkyang/anaconda3/lib/python3.8/site-packages/torch/distributed/launch.py", line 255, in main
+    raise subprocess.CalledProcessError(returncode=process.returncode,
+subprocess.CalledProcessError: Command '['/seu_share/home/wkyang/anaconda3/bin/python', '-u', 'train.py', '--local_rank=1']' returned non-zero exit status 1.
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
