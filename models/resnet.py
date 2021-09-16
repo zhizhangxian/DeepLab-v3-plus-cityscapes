@@ -8,8 +8,8 @@ import torch.nn.functional as F
 import torchvision
 import torch.utils.model_zoo as modelzoo
 
-# from modules import InPlaceABNSync as BatchNorm2d
-from torch.nn import SyncBatchNorm as BatchNorm2d
+from modules import InPlaceABNSync as BatchNorm2d
+from torch.nn import SyncBatchNorm as nnBatchNorm2d
 # from torch.nn import BatchNorm2d
 
 
@@ -51,14 +51,16 @@ class Bottleneck(nn.Module):
                 out_chan,
                 kernel_size=1,
                 bias=False)
-        self.bn3 = nn.BatchNorm2d(out_chan)
+        # self.bn3 = nn.BatchNorm2d(out_chan)
+        self.bn3 = nnBatchNorm2d(out_chan)
         self.relu = nn.ReLU(inplace=True)
 
         self.downsample = None
         if in_chan != out_chan or stride != 1:
             self.downsample = nn.Sequential(
                 nn.Conv2d(in_chan, out_chan, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(out_chan))
+                nnBatchNorm2d(out_chan))
+                # nn.BatchNorm2d(out_chan))
         self.init_weight()
 
     def forward(self, x):

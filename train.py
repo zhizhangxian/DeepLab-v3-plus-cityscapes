@@ -90,13 +90,12 @@ def train(verbose=True, **kwargs):
     pgc_avg = []
     ce_avg = []
     ssp_avg = []
+    ohem_avg = []
 
     st = glob_st = time.time()
     diter = iter(dl)
     n_epoch = 0
     for it in range(cfg.max_iter):
-        if dist.get_rank() == 0:
-            logger.info(it)
         try:
             im, lb, overlap, flip = next(diter)
             if not im.size()[0]!=cfg.ims_per_gpu // 2:
@@ -113,23 +112,22 @@ def train(verbose=True, **kwargs):
         lb = torch.squeeze(lb, 1)
         optim.zero_grad()
         im1, im2 = im[::2], im[1::2]
+        lb1, lb2 = lb[::2], lb[1::2]
         logits1 = net(im1)
         logits2 = net(im2)
+        # logits = torch.cat([logits1[-1], logits2[-1]], dim=0)
 
         outputs = []
         for f1, f2 in zip(logits1, logits2):
             outputs.append([f1, f2])
         logits = torch.cat([logits1[-1], logits2[-1]], dim=0)
-        # loss = criteria(logits, lb)
 
-        # mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
-        loss = criteria(logits, lb)
-        # loss = beta * sym_ce + ce
-        # gc_loss = sum(mid_mse)
-        # loss += alpha * gc_loss
-        logger.info(loss)
+        mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+        # loss = criteria(logits, lb)
+        loss = beta * sym_ce + ce
+        gc_loss = sum(mid_mse)
+        loss += alpha * gc_loss
         loss.backward()
-        exit()
 
         optim.step()
 
@@ -140,6 +138,9 @@ def train(verbose=True, **kwargs):
         ## print training log message
         if it%cfg.msg_iter==0 and not it==0:
             loss_avg = sum(loss_avg) / len(loss_avg)
+            ohem = sum(ohem_avg) / len(ohem_avg) 
+            pgc = sum(pgc_avg) / len(pgc_avg) 
+            ssp = sum(ssp_avg) / len(ssp_avg) 
             lr = optim.lr
             ed = time.time()
             t_intv, glob_t_intv = ed - st, ed - glob_st
@@ -160,7 +161,10 @@ def train(verbose=True, **kwargs):
                     lr = lr,
                     loss = loss_avg,
                     time = t_intv,
-                    eta = eta
+                    eta = eta,
+                    ohem = ohem,
+                    pgc = pgc,
+                    ssp = ssp,
                 )
             logger.info(msg)
             loss_avg = []

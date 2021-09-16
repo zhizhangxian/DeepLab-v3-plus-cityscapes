@@ -78,7 +78,6 @@ from configs.configurations import Config
 
 if __name__ == "__main__":
     cfg = Config()
-    cfg.datapth = r'D:\datasets\cityscapes'
     cfg.crop_size = (256, 256)
     ds = CityScapes(cfg, mode='train', num_copys=2)
     # print(ds[0])

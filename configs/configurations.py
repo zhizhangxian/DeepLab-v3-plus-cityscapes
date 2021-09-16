@@ -42,8 +42,8 @@ class Config(object):
         self.eval_n_workers = 2
         self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75) if multi_scale else (1.0,)
         self.eval_flip = True
-        self.alpha = 0.25
-        self.beta = 0.25
+        self.alpha = 0
+        self.beta = 0
 
 def set_seed(seed):
     random.seed(seed)

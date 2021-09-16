@@ -10,8 +10,8 @@ import torch.nn as nn
 import torchvision
 
 from .resnet import Resnet101
-# from modules import InPlaceABNSync as BatchNorm2d
-from torch.nn import SyncBatchNorm as BatchNorm2d
+from modules import InPlaceABNSync as BatchNorm2d
+# from torch.nn import SyncBatchNorm as BatchNorm2d
 
 
 
@@ -100,7 +100,7 @@ class Decoder(nn.Module):
         feat_cat = torch.cat([feat_low, feat_aspp_up], dim=1)
         feat_out = self.conv_cat(feat_cat)
         logits = self.conv_out(feat_out)
-        return feat_cat, feat_out, logits
+        return feat_out, logits
 
     def init_weight(self):
         for ly in self.children():
@@ -125,10 +125,10 @@ class Deeplab_v3plus(nn.Module):
         H, W = x.size()[2:]
         feat4, _, _, feat32 = self.backbone(x)
         feat_aspp = self.aspp(feat32)
-        feat_cat, feat_out, logits = self.decoder(feat4, feat_aspp)
+        feat_out, logits = self.decoder(feat4, feat_aspp)
         logits = F.interpolate(logits, (H, W), mode='bilinear', align_corners=True)
 
-        return feat32, feat_cat, feat_out, logits
+        return feat32, feat_aspp, feat_out, logits
 
     def init_weight(self):
         for ly in self.children():

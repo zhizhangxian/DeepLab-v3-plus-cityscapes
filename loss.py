@@ -182,7 +182,8 @@ class OhemCELoss(nn.Module):
         N, C, H, W = logits.size()
         n_pixs = N * H * W
         logits = logits.permute(0, 2, 3, 1).contiguous().view(-1, C)
-        labels = labels.view(-1)
+
+        labels = labels.contiguous().view(-1)
         with torch.no_grad():
             scores = F.softmax(logits, dim=1)
             labels_cpu = labels
