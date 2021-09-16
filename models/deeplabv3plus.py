@@ -10,8 +10,8 @@ import torch.nn as nn
 import torchvision
 
 from .resnet import Resnet101
-from modules import InPlaceABNSync as BatchNorm2d
-# from torch.nn import BatchNorm2d
+# from modules import InPlaceABNSync as BatchNorm2d
+from torch.nn import SyncBatchNorm as BatchNorm2d
 
 
 
