@@ -37,13 +37,19 @@ class new_ssp_loss(nn.Module):
         for i in range(N):
             shape_1 = (overlap[i][0][1][0] - overlap[i][0][0][0], overlap[i][0][1][1] - overlap[i][0][0][1])
             shape_2 = (overlap[i][1][1][0] - overlap[i][1][0][0], overlap[i][1][1][1] - overlap[i][1][0][1])
-            img_1 = output1[i, :, overlap[i][0][0][0]:overlap[i][0][1][0], overlap[i][0][0][1]:overlap[i][0][1][1]]
-            img_2 = output2[i, :, overlap[i][1][0][0]:overlap[i][1][1][0], overlap[i][1][0][1]:overlap[i][1][1][1]]
+            # img_1 = output1[i, :, overlap[i][0][0][0]:overlap[i][0][1][0], overlap[i][0][0][1]:overlap[i][0][1][1]]
+            # img_2 = output2[i, :, overlap[i][1][0][0]:overlap[i][1][1][0], overlap[i][1][0][1]:overlap[i][1][1][1]]
+
+
+            img_1 = output1[i, :, overlap[i][0][0][1]:overlap[i][0][1][1], overlap[i][0][0][0]:overlap[i][0][1][0]]
+            img_2 = output2[i, :, overlap[i][1][0][1]:overlap[i][1][1][1], overlap[i][1][0][0]:overlap[i][1][1][0]]
 
 
 
-            ex_labels[2 * i, overlap[i][0][0][0]:overlap[i][0][1][0], overlap[i][0][0][1]:overlap[i][0][1][1]] = self.ignore_index
-            ex_labels[2 * i + 1, overlap[i][1][0][0]:overlap[i][1][1][0], overlap[i][1][0][1]:overlap[i][1][1][1]] = self.ignore_index
+
+
+            # ex_labels[2 * i, overlap[i][0][0][1]:overlap[i][0][1][1], overlap[i][0][0][0]:overlap[i][0][1][0]] = self.ignore_index
+            # ex_labels[2 * i + 1, overlap[i][1][0][1]:overlap[i][1][1][1], overlap[i][1][0][0]:overlap[i][1][1][0]] = self.ignore_index
 
             if flips[i] == -1:
                 img_2 = torch.flip(img_2, [2])
@@ -59,7 +65,6 @@ class new_ssp_loss(nn.Module):
 
                 ce_loss_1_2 = self.ce_loss(img_1.unsqueeze(0), img_2_label)
                 ce_loss_2_1 = self.ce_loss(img_2.unsqueeze(0), img_1_label)
-                sym_ce_loss = 0.5 * ce_loss_1_2 + 0.5 * ce_loss_2_1
             mse += mse_loss
             ce_1_2 += ce_loss_1_2
             ce_2_1 += ce_loss_2_1
@@ -70,15 +75,17 @@ class new_ssp_loss(nn.Module):
         sym_ce = 0.5 * (ce_1_2 + ce_2_1)
         label1 = labels[::2]
         label2 = labels[1::2]
-        exlabel1 = ex_labels[::2]
-        exlabel2 = ex_labels[1::2]
+
         Labels = torch.cat([label1, label2], dim=0).detach()
-        ex_labels = torch.cat([exlabel1, exlabel2], dim=0).detach()
         Output = torch.cat([outputs[0], outputs[1]], dim=0)
 
         ce = self.ce_loss(Output, Labels)
         #
-        ex_ce = self.ce_loss(Output, ex_labels)
+        
+        # exlabel1 = ex_labels[::2]
+        # exlabel2 = ex_labels[1::2]
+        # ex_labels = torch.cat([exlabel1, exlabel2], dim=0).detach()
+        # ex_ce = self.ce_loss(Output, ex_labels)
         return mse, ce_1_2, ce_2_1, sym_ce, ce
 
 
@@ -121,8 +128,12 @@ class ssp_loss_inner(new_ssp_loss):
         for i in range(len_img):
             shape_1 = (overlap_new[i][0][1][0] - overlap_new[i][0][0][0], overlap_new[i][0][1][1] - overlap_new[i][0][0][1])
             shape_2 = (overlap_new[i][1][1][0] - overlap_new[i][1][0][0], overlap_new[i][1][1][1] - overlap_new[i][1][0][1])
-            img_1 = outputs[0][:, overlap_new[i][0][0][0]:overlap_new[i][0][1][0], overlap_new[i][0][0][1]:overlap_new[i][0][1][1]]
-            img_2 = outputs[1][:, overlap_new[i][1][0][0]:overlap_new[i][1][1][0], overlap_new[i][1][0][1]:overlap_new[i][1][1][1]]
+            # img_1 = outputs[0][:, overlap_new[i][0][0][0]:overlap_new[i][0][1][0], overlap_new[i][0][0][1]:overlap_new[i][0][1][1]]
+            # img_2 = outputs[1][:, overlap_new[i][1][0][0]:overlap_new[i][1][1][0], overlap_new[i][1][0][1]:overlap_new[i][1][1][1]]
+
+            img_1 = outputs[0][:, overlap_new[i][0][0][1]:overlap_new[i][0][1][1], overlap_new[i][0][0][0]:overlap_new[i][0][1][0]]
+            img_2 = outputs[1][:, overlap_new[i][1][0][1]:overlap_new[i][1][1][1], overlap_new[i][1][0][0]:overlap_new[i][1][1][0]]
+
 
             if flips[i] == -1:
                 img_2 = torch.flip(img_2, [2])

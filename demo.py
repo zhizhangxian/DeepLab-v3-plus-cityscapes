@@ -67,6 +67,7 @@
 import torch
 import torch.nn as nn
 
+import numpy as np
 
 from cityscapes import CityScapes, collate_fn2
 from loss import OhemCELoss, pgc_loss
@@ -76,10 +77,89 @@ from torch.utils.data import DataLoader
 from models.deeplabv3plus import Deeplab_v3plus
 from configs.configurations import Config
 
+import cv2
+
+
+def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4):
+
+    ptLeftTop, ptRightBottom = box[0], box[1]
+    
+    img = cv2.rectangle(img, ptLeftTop, ptRightBottom, point_color, thickness, lineType)
+    
+    cv2.imshow('AlanWang', img)
+    cv2.waitKey(0) # 显示 10000 ms 即 10s 后消失 
+    return img
+
+
 if __name__ == "__main__":
     cfg = Config()
+    cfg.datapth = r'D:\datasets\cityscapes'
     cfg.crop_size = (256, 256)
     ds = CityScapes(cfg, mode='train', num_copys=2)
+
+
+
+    # sample = ds[0]
+    # ims, lbs, overlap = sample['im'], sample['lb'], sample['overlap']#, sample['flip'],
+    # try:
+    #     flip = sample['flip']
+    # except:
+    #     flip = 1
+    # print(overlap)
+    # im1, im2 = ims
+
+    # im1 = np.array(im1)
+    # im2 = np.array(im2)
+
+    # box1 = [(overlap[0][0][0], overlap[0][0][1]), (overlap[0][1][0], overlap[0][1][1])]
+    # print(box1)
+    # box2 = [(overlap[1][0][0], overlap[1][0][1]), (overlap[1][1][0], overlap[1][1][1])]
+    # print(box2)
+    
+    # im1 = Rec(im1, box1)
+    # im2 = Rec(im2, box2)
+    
+    # # cv2.imshow('AlanWang', im1)
+    # # cv2.waitKey(10000) # 显示 10000 ms 即 10s 后消失
+    # # print(im1.shape)
+    # # exit()
+    # # im1 = im1.transpose(2, 1, 0)
+    # # print(im1.shape)
+    # # exit()
+    # print(overlap)
+    # shape_1 = (overlap[0][1][0] - overlap[0][0][0], overlap[0][1][1] - overlap[0][0][1])
+    # shape_2 = (overlap[1][1][0] - overlap[1][0][0], overlap[1][1][1] - overlap[1][0][1])
+
+
+    # im = np.hstack([im1, im2])
+    # cv2.imshow('mat', im)
+    # cv2.waitKey(0)
+    
+    # # img_1 = im1[overlap[0][0][0]:overlap[0][1][0], overlap[0][0][1]:overlap[0][1][1], :]
+    # img_1 = im1[overlap[0][0][1]:overlap[0][1][1], overlap[0][0][0]:overlap[0][1][0],  :]
+
+    # img_2 = im2[overlap[1][0][1]:overlap[1][1][1], overlap[1][0][0]:overlap[1][1][0], :]
+    # img = np.hstack([img_1, img_2])
+    # cv2.imshow('crop', img)
+    # cv2.waitKey(0)
+    
+    # print(shape_1)
+    # print(img_1.shape)
+
+    # print((img_1 == img_2).all())
+    
+
+    
+
+
+
+    # # if flip[0] * flip[1] == -1:
+    # #     im2 = cv2.flip(im2, 1)
+
+
+    # exit()
+    
+    
     # print(ds[0])
 
     dl = DataLoader(ds,

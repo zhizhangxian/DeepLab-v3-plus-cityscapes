@@ -57,6 +57,11 @@ class RandomCrop(object):
         im = im.crop(crop_box)
         lb = lb.crop(crop_box)
 
+        # cur_cor = [0, 0, W, H]
+        # ori_cor = [int(sh), int(sw), int(sw) + W, int(sh) + H]
+        
+        
+        
         cur_cor = [0, 0, H, W]
         ori_cor = [int(sw), int(sh), int(sw) + W, int(sh) + H]
 
