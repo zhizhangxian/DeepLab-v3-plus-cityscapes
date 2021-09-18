@@ -35,15 +35,15 @@ class Config(object):
         self.eval_iter = 10
         self.ohem_thresh = 0.7
         self.respth = './res'
-        self.port = 32168
+        self.port = 32144
         # eval control
         self.seed_max = 1000
-        self.eval_batchsize = 2
-        self.eval_n_workers = 2
+        self.eval_batchsize = 4
+        self.eval_n_workers = 4
         self.eval_scales = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75) if multi_scale else (1.0,)
         self.eval_flip = True
-        self.alpha = 0
-        self.beta = 0
+        self.alpha = 0.3
+        self.beta = 0.9
 
 def set_seed(seed):
     random.seed(seed)

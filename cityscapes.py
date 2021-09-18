@@ -133,12 +133,15 @@ def collate_fn2(batchs):
     for index, batch in enumerate(batchs):
         _overlaps.append([])
         imgs, targets, overlaps, flip = batch['im'], batch['lb'], batch['overlap'], batch['flip']
-        flips.append(flip)
+        
+        _flip = 1
         for i in range(len(imgs)):
             # print('index: {:}, i: {:}'.format(index, i))
             _imgs.append(torch.unsqueeze(imgs[i], 0))
             _targets.append(torch.unsqueeze(targets[i], 0))
             _overlaps[index].append(overlaps[i])
+            _flip *= flip[i]
+        flips.append(_flip)
     return torch.cat(_imgs, dim=0), torch.cat(_targets, dim=0), _overlaps, flips
 
 

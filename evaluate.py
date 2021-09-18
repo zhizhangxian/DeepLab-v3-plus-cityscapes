@@ -71,13 +71,13 @@ class MscEval(object):
                 with torch.no_grad():
                     im = F.interpolate(imgs, new_hw, mode='bilinear', align_corners=True)
                     im = im.cuda()
-                    out = net(im)
+                    out = net(im)[-1]
                     out = F.interpolate(out, (H, W), mode='bilinear', align_corners=True)
 
                     prob = F.softmax(out, 1)
                     probs += prob.cpu()
                     if self.cfg.eval_flip:
-                        out = net(torch.flip(im, dims=(3,)))
+                        out = net(torch.flip(im, dims=(3,)))[-1]
                         out = torch.flip(out, dims=(3,))
                         out = F.interpolate(out, (H, W), mode='bilinear', align_corners=True)
                         prob = F.softmax(out, 1)

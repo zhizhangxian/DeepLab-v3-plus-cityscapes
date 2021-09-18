@@ -28,7 +28,12 @@ class new_ssp_loss(nn.Module):
         ce_2_1 = 0
         ex_labels = labels.detach().clone()
 
-        # for i in range(N):
+        # # for i in range(N):
+        # import torch.distributed as dist
+        # if dist.get_rank() == 0:
+        #     print(flips)
+        # exit()
+
         for i in range(N):
             shape_1 = (overlap[i][0][1][0] - overlap[i][0][0][0], overlap[i][0][1][1] - overlap[i][0][0][1])
             shape_2 = (overlap[i][1][1][0] - overlap[i][1][0][0], overlap[i][1][1][1] - overlap[i][1][0][1])

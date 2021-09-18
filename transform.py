@@ -144,11 +144,11 @@ class HorizontalFlip(object):
 
     def call(self, im, lb):
         if random.random() > self.p:
-            return im, lb, False
+            return im, lb, 1
         else:
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
             lb = lb.transpose(Image.FLIP_LEFT_RIGHT)
-        return im, lb, True
+        return im, lb, -1
 
 
 class Pair_HorizontalFlip(HorizontalFlip):
