@@ -45,6 +45,8 @@ class new_ssp_loss(nn.Module):
             img_2 = output2[i, :, overlap[i][1][0][1]:overlap[i][1][1][1], overlap[i][1][0][0]:overlap[i][1][1][0]]
 
 
+            label1 = labels[2 * i, overlap[i][0][0][1]:overlap[i][0][1][1], overlap[i][0][0][0]:overlap[i][0][1][0]]
+            label2 = labels[2 * i + 1, overlap[i][1][0][1]:overlap[i][1][1][1], overlap[i][1][0][0]:overlap[i][1][1][0]]
 
 
 
@@ -53,6 +55,10 @@ class new_ssp_loss(nn.Module):
 
             if flips[i] == -1:
                 img_2 = torch.flip(img_2, [2])
+                label2 = torch.flip(label2, [1])
+
+            print((label1 == label2).all())
+            exit()
 
             if ((shape_1[0] < 1) or (shape_1[1] < 1) or (shape_2[0] < 1) or (shape_2[1] < 1)):
                 mse_loss = 0
@@ -133,6 +139,10 @@ class ssp_loss_inner(new_ssp_loss):
 
             img_1 = outputs[0][:, overlap_new[i][0][0][1]:overlap_new[i][0][1][1], overlap_new[i][0][0][0]:overlap_new[i][0][1][0]]
             img_2 = outputs[1][:, overlap_new[i][1][0][1]:overlap_new[i][1][1][1], overlap_new[i][1][0][0]:overlap_new[i][1][1][0]]
+
+
+
+
 
 
             if flips[i] == -1:

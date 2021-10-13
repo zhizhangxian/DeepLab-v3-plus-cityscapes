@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 
-
+import cv2
 from PIL import Image
 import PIL.ImageEnhance as ImageEnhance
 import json
@@ -39,7 +39,31 @@ class RandomCrop(object):
                     )
 
 
-    def mini_call(self, im, lb):
+    def test(self, im=None, ori_im=None, cur_cor=None, ori_cor=None, flip=1):
+        crop_img = np.array(ori_im)
+        print(crop_img.shape)
+        crop_img = crop_img[ori_cor[0]:ori_cor[2], ori_cor[1]:ori_cor[3]]
+        if flip == -1:
+            crop_img = cv2.flip(crop_img, 1)
+
+        print((crop_img == np.array(im)).all())
+        im.show()
+        # ori_im.show()
+        ori_im = np.array(ori_im)
+        print(ori_cor)
+        ptLeftTop, ptRightBottom = (ori_cor[1], ori_cor[0]), (ori_cor[3], ori_cor[2])
+        cv2.rectangle(ori_im, ptLeftTop, ptRightBottom, (0, 255, 0), 3, 4)
+        cv2.imshow('img', ori_im)
+        cv2.waitKey(0)
+
+
+        exit()
+        
+        pass
+
+
+
+    def mini_call(self, im, lb, flip, ori_im=None):
         assert im.size == lb.size
         W, H = self.size
         w, h = im.size
@@ -53,9 +77,8 @@ class RandomCrop(object):
             lb = lb.resize((w, h), Image.NEAREST)
         sw, sh = random.random() * (w - W), random.random() * (h - H)
         crop_box = int(sw), int(sh), int(sw) + W, int(sh) + H
-        
-        im = im.crop(crop_box)
-        lb = lb.crop(crop_box)
+        im1 = im.crop(crop_box)
+        lb1 = lb.crop(crop_box)
 
         # cur_cor = [0, 0, W, H]
         # ori_cor = [int(sh), int(sw), int(sw) + W, int(sh) + H]
@@ -63,9 +86,15 @@ class RandomCrop(object):
         
         
         cur_cor = [0, 0, H, W]
-        ori_cor = [int(sw), int(sh), int(sw) + W, int(sh) + H]
+        # print(flip)
 
-        return im, lb, cur_cor, ori_cor
+        if flip == 1:
+            ori_cor = [int(sh), int(sw), int(sh) + H, int(sw) + W]
+        elif flip == -1:
+            ori_cor = [int(sh), w - (int(sw) + W), int(sh) + H, w - (int(sw))]
+        # self.test(im1, ori_im, cur_cor, ori_cor, flip)
+        # exit()
+        return im1, lb1, cur_cor, ori_cor
 
 
 
@@ -75,26 +104,63 @@ class Pair_RandomCrop(RandomCrop):
     
 
 
-    def get_overlaps(self, cur_cors, ori_cors):
+    def get_overlaps(self, cur_cors, ori_cors, flips):
+        
+        # print(cur_cors)
+        # print(ori_cors)
+        # print(flips)
+        # exit()
+
         overlaps = []
         up = max(ori_cors[0][0], ori_cors[1][0])
         left = max(ori_cors[0][1], ori_cors[1][1])
         down = min(ori_cors[0][2], ori_cors[1][2])
         right = min(ori_cors[0][3], ori_cors[1][3])
+        overlap = [up, left, down, right]
+
         up_left = (up, left)
         down_right = (down, right)
-
         for i in range(len(cur_cors)):
+            flip = flips[i]
             ori_cor = ori_cors[i]
             cur_cor = cur_cors[i]
-            size_y, size_x = cur_cor[2] - cur_cor[0], cur_cor[3] - cur_cor[1]
-            _up_left = (round(cur_cor[0] + size_y * (up_left[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
-                        round(cur_cor[1] + size_x * (up_left[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
-            _down_right = (round(cur_cor[0] + size_y * (down_right[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
-                            round(cur_cor[1] + size_x * (down_right[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
-            overlaps.append([_up_left, _down_right])
+            # print('cur_cor = {:}'.format(cur_cor))
+            if flip == 1:
+                size_y, size_x = cur_cor[2] - cur_cor[0], cur_cor[3] - cur_cor[1]
+                _up_left = (round(cur_cor[0] + size_y * (up_left[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+                            round(cur_cor[1] + size_x * (up_left[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
+                _down_right = (round(cur_cor[0] + size_y * (down_right[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+                                round(cur_cor[1] + size_x * (down_right[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
+            elif flip == -1:
 
-        return overlaps
+                size_y, size_x = cur_cor[2] - cur_cor[0], cur_cor[3] - cur_cor[1]
+                _up_left = (round(cur_cor[0] + size_y * (up_left[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+                            round(cur_cor[1] + size_x * (1 - (down_right[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1]))))
+                _down_right = (round(cur_cor[0] + size_y * (down_right[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+                                round(cur_cor[1] + size_x * (1 - (up_left[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1]))))
+            overlaps.append([_up_left, _down_right])
+        return overlaps, overlap
+
+
+        # overlaps = []
+        # up = max(ori_cors[0][0], ori_cors[1][0])
+        # left = max(ori_cors[0][1], ori_cors[1][1])
+        # down = min(ori_cors[0][2], ori_cors[1][2])
+        # right = min(ori_cors[0][3], ori_cors[1][3])
+        # up_left = (up, left)
+        # down_right = (down, right)
+
+        # for i in range(len(cur_cors)):
+        #     ori_cor = ori_cors[i]
+        #     cur_cor = cur_cors[i]
+        #     size_y, size_x = cur_cor[2] - cur_cor[0], cur_cor[3] - cur_cor[1]
+        #     _up_left = (round(cur_cor[0] + size_y * (up_left[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+        #                 round(cur_cor[1] + size_x * (up_left[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
+        #     _down_right = (round(cur_cor[0] + size_y * (down_right[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
+        #                     round(cur_cor[1] + size_x * (down_right[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1])))
+        #     overlaps.append([_up_left, _down_right])
+
+        # return overlaps
 
 
     @staticmethod
@@ -107,31 +173,111 @@ class Pair_RandomCrop(RandomCrop):
         return good_sample
 
 
-    def sample(self, ims, lbs):
+    @staticmethod
+    def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4, show=False, crop=False):
+
+        if crop:
+            return img[box[0][0]:box[1][0], box[0][1]:box[1][1]]
+
+        ptLeftTop = (box[1], box[0])
+        ptRightBottom = (box[3], box[2])
+
+        img = cv2.rectangle(img, ptLeftTop, ptRightBottom, point_color, thickness, lineType)
+
+
+        if show:
+            cv2.imshow('AlanWang', img)
+            cv2.waitKey(0) # 显示 10000 ms 即 10s 后消失 
+        return img
+
+
+
+    def sample(self, ims, lbs, flips, ori_im=None):
         _ims = []
         _lbs = []
         cur_cors = []
         ori_cors = []
-        for im, lb in zip(ims, lbs):
-            im, lb, cur_cor, ori_cor = RandomCrop.mini_call(self, im, lb)
+
+        for im, lb, flip in zip(ims, lbs, flips):
+            im, lb, cur_cor, ori_cor = RandomCrop.mini_call(self, im, lb, flip, ori_im)
             _ims.append(im)
             _lbs.append(lb)
             cur_cors.append(cur_cor)
             ori_cors.append(ori_cor)
-        overlaps = self.get_overlaps(cur_cors, ori_cors)
+
+        overlaps, overlap = self.get_overlaps(cur_cors, ori_cors, flips)
+        
+        # ori_im = np.array(ori_im)
+        # ori_im = self.Rec(ori_im, ori_cors[0], point_color=(0, 255, 0))
+        # ori_im = self.Rec(ori_im, ori_cors[1], point_color=(255, 0, 0))
+        # cv2.imwrite('ori_im.jpg', ori_im)
+
+
+
+        # im1, im2 = np.array(_ims[0]), np.array(_ims[1])
+
+        # # print(im1.shape)
+        # # print(im2.shape)
+        
+        # # exit()
+
+
+
+        # img = np.hstack([im1, im2])
+        # cv2.imwrite('ori_stack.jpg', img)
+        # im1 = self.Rec(im1, overlaps[0], crop=True)
+        # im2 = self.Rec(im2, overlaps[1], crop=True)
+        # if (im1 == im2).all():
+        #     exit()
+        # else:
+        #     img = np.hstack([im1, im2])
+        #     cv2.imwrite('stack.jpg', img)
+        # exit()
+        # # print(im1.shape)
+        # # print(im2.shape)
+        
+        # # exit()
+
+
+
+        # _img = np.array(ori_im)[overlap[0]:overlap[2], overlap[1]:overlap[3]]
+        
+        # cv2.imshow('img', _img)
+        # cv2.waitKey(0)
+        # exit()
 
 
         if self.good_sample(ori_cors):
             return dict(im=_ims, lb=_lbs, overlap=overlaps)
         else:
-            return self.sample(ims, lbs)
+            return self.sample(ims, lbs, flips)
 
     def __call__(self, im_lbs):
         ims = im_lbs['im']
         lbs = im_lbs['lb']
+        flips = im_lbs['flip']
+        
+        ori = im_lbs['ori']
+        ori_im = ori['im']
+        new_imlbs = self.sample(ims, lbs, flips, ori_im)
 
-        return self.sample(ims, lbs)
+        # overlaps = new_imlbs['overlap']
+        # _ims = new_imlbs['im']
+        # im1, im2 = np.array(_ims[0]), np.array(_ims[1])
+        # img = np.hstack([im1, im2])
+        # cv2.imwrite('ori_stack.jpg', img)
+        # im1 = self.Rec(im1, overlaps[0], crop=True)
+        # im2 = self.Rec(im2, overlaps[1], crop=True)
+        # if (im1 == im2).all():
+        #     print('exit')
+        #     exit()
+        # else:
+        #     img = np.hstack([im1, im2])
+        #     cv2.imwrite('stack.jpg', img)
 
+
+        im_lbs.update(new_imlbs)
+        return im_lbs
 
 class HorizontalFlip(object):
     def __init__(self, p = 0.5, *args, **kwargs):
@@ -195,6 +341,7 @@ class Pair_RandomScale(RandomScale):
 
 
     def __call__(self, im_lb):
+        ori = im_lb.copy()
         im_lb, scale = RandomScale.__call__(self, im_lb)
         im = im_lb['im']
         lb = im_lb['lb']
@@ -202,9 +349,8 @@ class Pair_RandomScale(RandomScale):
         lbs = [lb, lb.copy()]
         H, W = int(self.H * scale), int(self.W * scale)
         transform = [0, 0, self.H, self.W, 0, 0, H, W, scale, 0]
-        return dict(im=ims, lb=lbs, transform = [transform, transform.copy()])
-
-
+        im_lb.update(dict(im=ims, lb=lbs, transform = [transform, transform.copy()], ori=ori))
+        return im_lb
 
 class ColorJitter(object):
     def __init__(self, brightness=None, contrast=None, saturation=None, *args, **kwargs):

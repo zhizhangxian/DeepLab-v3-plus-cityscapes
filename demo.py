@@ -80,22 +80,67 @@ from configs.configurations import Config
 import cv2
 
 
-def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4):
+def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4, show=False, crop=False):
 
-    ptLeftTop, ptRightBottom = box[0], box[1]
-    
-    img = cv2.rectangle(img, ptLeftTop, ptRightBottom, point_color, thickness, lineType)
-    
-    cv2.imshow('AlanWang', img)
-    cv2.waitKey(0) # 显示 10000 ms 即 10s 后消失 
+    if show:
+        ptLeftTop = (box[0][1], box[0][0])
+        ptRightBottom = (box[1][1], box[1][0])
+
+        img = cv2.rectangle(img, ptLeftTop, ptRightBottom, point_color, thickness, lineType)
+        cv2.imshow('AlanWang', img)
+        cv2.waitKey(0) # 显示 10000 ms 即 10s 后消失 
+
+
+    if crop:
+        return img[box[0][0]:box[1][0], box[0][1]:box[1][1]]
     return img
+
+
+
+
+# def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4):
+
+#     ptLeftTop, ptRightBottom = box[0], box[1]
+    
+#     img = cv2.rectangle(img, ptLeftTop, ptRightBottom, point_color, thickness, lineType)
+    
+#     cv2.imshow('AlanWang', img)
+#     cv2.waitKey(0) # 显示 10000 ms 即 10s 后消失 
+#     return img
 
 
 if __name__ == "__main__":
     cfg = Config()
     cfg.datapth = r'D:\datasets\cityscapes'
-    cfg.crop_size = (256, 256)
+    cfg.crop_size = (1025, 513)
     ds = CityScapes(cfg, mode='train', num_copys=2)
+
+
+    # new_imlbs = ds[0]
+    # overlaps = new_imlbs['overlap']
+    # flips = new_imlbs['flip']
+    # flip = flips[0] * flips[1]
+    # _ims = new_imlbs['im']
+    # im1, im2 = np.array(_ims[0]), np.array(_ims[1])
+    # img = np.hstack([im1, im2])
+    # cv2.imwrite('ori_stack.jpg', img)
+    # im1 = Rec(im1, overlaps[0], crop=True)
+    # im2 = Rec(im2, overlaps[1], crop=True)
+    # if flip == -1:
+    #     im2 = cv2.flip(im2, 1)
+    # if (im1 == im2).all():
+    #     print('exit')
+    #     exit()
+    # else:
+    #     print('noop')
+    #     img = np.hstack([im1, im2])
+    #     cv2.imwrite('stack.jpg', img)
+
+    # exit()
+
+
+
+
 
 
 
@@ -105,94 +150,76 @@ if __name__ == "__main__":
     #     flip = sample['flip']
     # except:
     #     flip = 1
-    # print(overlap)
+    # # print(overlap)
     # im1, im2 = ims
 
     # im1 = np.array(im1)
     # im2 = np.array(im2)
 
-    # box1 = [(overlap[0][0][0], overlap[0][0][1]), (overlap[0][1][0], overlap[0][1][1])]
+    # print(flip)
+
+
+
+    # # box1 = [(overlap[0][0][0], overlap[0][0][1]), (overlap[0][1][0], overlap[0][1][1])]
+    # box1 = overlap[0]
     # print(box1)
-    # box2 = [(overlap[1][0][0], overlap[1][0][1]), (overlap[1][1][0], overlap[1][1][1])]
+    # # box2 = [(overlap[1][0][0], overlap[1][0][1]), (overlap[1][1][0], overlap[1][1][1])]
+    # box2 = overlap[1]
     # print(box2)
-    
-    # im1 = Rec(im1, box1)
-    # im2 = Rec(im2, box2)
-    
-    # # cv2.imshow('AlanWang', im1)
-    # # cv2.waitKey(10000) # 显示 10000 ms 即 10s 后消失
-    # # print(im1.shape)
-    # # exit()
-    # # im1 = im1.transpose(2, 1, 0)
-    # # print(im1.shape)
-    # # exit()
-    # print(overlap)
-    # shape_1 = (overlap[0][1][0] - overlap[0][0][0], overlap[0][1][1] - overlap[0][0][1])
-    # shape_2 = (overlap[1][1][0] - overlap[1][0][0], overlap[1][1][1] - overlap[1][0][1])
 
 
-    # im = np.hstack([im1, im2])
-    # cv2.imshow('mat', im)
+    # im1 = Rec(im1, box1, show=False, crop=True)
+    # im2 = Rec(im2, box2, show=False, crop=True)
+    # if flip[0] * flip[1] == -1:
+    #     im2 = cv2.flip(im2, 1)
+    # if (im1 == im2).all():
+    #     exit()
+    # img = np.hstack([im1, im2])
+    # cv2.imshow('img', img)
     # cv2.waitKey(0)
-    
-    # # img_1 = im1[overlap[0][0][0]:overlap[0][1][0], overlap[0][0][1]:overlap[0][1][1], :]
-    # img_1 = im1[overlap[0][0][1]:overlap[0][1][1], overlap[0][0][0]:overlap[0][1][0],  :]
-
-    # img_2 = im2[overlap[1][0][1]:overlap[1][1][1], overlap[1][0][0]:overlap[1][1][0], :]
-    # img = np.hstack([img_1, img_2])
-    # cv2.imshow('crop', img)
-    # cv2.waitKey(0)
-    
-    # print(shape_1)
-    # print(img_1.shape)
-
-    # print((img_1 == img_2).all())
-    
-
-    
-
-
-
-    # # if flip[0] * flip[1] == -1:
-    # #     im2 = cv2.flip(im2, 1)
-
-
     # exit()
-    
-    
-    # print(ds[0])
 
-    dl = DataLoader(ds,
-                    batch_size = 1,
-                    shuffle = True,
-                    num_workers = 4,
-                    collate_fn=collate_fn2,
-                    drop_last = True)
-    # for im_lb in dl:
-    #     break
+    
 
-    net = Deeplab_v3plus(cfg)
-    net.cuda()
-    net.train()
-    net = nn.DataParallel(net)
-    diter = iter(dl)
-    im, lb, overlap, flip = next(diter)
-    lb = lb.cuda()
-    lb = lb.squeeze(1)
-    im1, im2 = im[::2], im[1::2]
-    logits1 = net(im1)
-    logits2 = net(im2)
-    outputs = []
-    for f1, f2 in zip(logits1, logits2):
-        outputs.append([f1, f2])
-    n_min = cfg.ims_per_gpu*cfg.crop_size[0]*cfg.crop_size[1]//16
-    criteria = OhemCELoss(thresh=cfg.ohem_thresh, n_min=n_min).cuda()
-    Criterion = pgc_loss(use_pgc = [0,1,2], criteria=criteria)
-    mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
-    loss = cfg.beta * sym_ce + ce
-    gc_loss = sum(mid_mse)
-    loss += cfg.alpha * gc_loss
-    loss.backward()
+
+
+    # dl = DataLoader(ds,
+    #                 batch_size = 1,
+    #                 shuffle = True,
+    #                 num_workers = 4,
+    #                 collate_fn=collate_fn2,
+    #                 drop_last = True)
+    # # for im_lb in dl:
+    # #     break
+
+    # net = Deeplab_v3plus(cfg)
+    # net.cuda()
+    # net.train()
+    # net = nn.DataParallel(net)
+    # diter = iter(dl)
+    # im, lb, overlap, flip = next(diter)
+
+
+    
+
+
+
+    # lb = lb.cuda()
+    # lb = lb.squeeze(1)
+    # im1, im2 = im[::2], im[1::2]
+    # logits1 = net(im1)
+    # logits2 = net(im2)
+    # outputs = []
+    # for f1, f2 in zip(logits1, logits2):
+    #     outputs.append([f1, f2])
+    # n_min = cfg.ims_per_gpu*cfg.crop_size[0]*cfg.crop_size[1]//16
+    # criteria = OhemCELoss(thresh=cfg.ohem_thresh, n_min=n_min).cuda()
+    # Criterion = pgc_loss(use_pgc = [0,1,2], criteria=criteria)
+    # mse, sym_ce, mid_mse, mid_ce, mid_l1, ce = Criterion(outputs, overlap, flip, lb)
+    # loss = cfg.beta * sym_ce + ce
+    # gc_loss = sum(mid_mse)
+    # loss += cfg.alpha * gc_loss
+    # loss.backward()
     # print(loss)
 
     # for i in range(100):

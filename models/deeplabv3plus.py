@@ -11,7 +11,10 @@ import torchvision
 
 from .resnet import Resnet101
 from modules import InPlaceABNSync as BatchNorm2d
+
 # from torch.nn import SyncBatchNorm as BatchNorm2d
+# from torch.nn import BatchNorm2d
+
 
 
 
@@ -112,6 +115,7 @@ class Decoder(nn.Module):
 class Deeplab_v3plus(nn.Module):
     def __init__(self, cfg, *args, **kwargs):
         super(Deeplab_v3plus, self).__init__()
+        # self.backbone = Resnet101(stride=16)
         self.backbone = Resnet101(stride=16)
         self.aspp = ASPP(in_chan=2048, out_chan=256, with_gp=cfg.aspp_global_feature)
         self.decoder = Decoder(cfg.n_classes, low_chan=256)

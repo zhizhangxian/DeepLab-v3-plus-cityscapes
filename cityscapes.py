@@ -80,14 +80,16 @@ class CityScapes(Dataset):
         elif num_copys == 2:
             self.to_tensor = Pair_ToTensor(self.to_tensor)
             img_size = (1024,2048)
+            cfg.scales= (1,)
             self.trans = Compose([
                 Pair_RandomScale(cfg.scales, img_size),
                 Pair_ColorJitter(
                     brightness = cfg.brightness,
                     contrast = cfg.contrast,
                     saturation = cfg.saturation),
-                Pair_RandomCrop(cfg.crop_size),
                 Pair_HorizontalFlip(),
+
+                Pair_RandomCrop(cfg.crop_size),
                 ])
 
         self.num_copys = num_copys
@@ -110,7 +112,7 @@ class CityScapes(Dataset):
             return imgs, label
 
         else:
-            im_lb = self.to_tensor(im_lb)
+            # im_lb = self.to_tensor(im_lb)
             return im_lb
             
 
@@ -142,7 +144,7 @@ def collate_fn2(batchs):
             _overlaps[index].append(overlaps[i])
             _flip *= flip[i]
         flips.append(_flip)
-    return torch.cat(_imgs, dim=0), torch.cat(_targets, dim=0), _overlaps, flips
+    return torch.cat(_imgs, dim=0), torch.cat(_targets, dim=0), _overlaps, flips, 
 
 
 
@@ -167,3 +169,4 @@ if __name__ == "__main__":
         for el in imgs:
             print(el.size())
         break
+
