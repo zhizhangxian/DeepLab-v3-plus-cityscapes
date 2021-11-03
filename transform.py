@@ -116,7 +116,7 @@ class Pair_RandomCrop(RandomCrop):
         left = max(ori_cors[0][1], ori_cors[1][1])
         down = min(ori_cors[0][2], ori_cors[1][2])
         right = min(ori_cors[0][3], ori_cors[1][3])
-        overlap = [up, left, down, right]
+        #overlap = [up, left, down, right]
 
         up_left = (up, left)
         down_right = (down, right)
@@ -139,7 +139,7 @@ class Pair_RandomCrop(RandomCrop):
                 _down_right = (round(cur_cor[0] + size_y * (down_right[0] - ori_cor[0]) / (ori_cor[2] - ori_cor[0])),
                                 round(cur_cor[1] + size_x * (1 - (up_left[1] - ori_cor[1]) / (ori_cor[3] - ori_cor[1]))))
             overlaps.append([_up_left, _down_right])
-        return overlaps, overlap
+        return overlaps#, overlap
 
 
         # overlaps = []
@@ -205,7 +205,7 @@ class Pair_RandomCrop(RandomCrop):
             cur_cors.append(cur_cor)
             ori_cors.append(ori_cor)
 
-        overlaps, overlap = self.get_overlaps(cur_cors, ori_cors, flips)
+        overlaps = self.get_overlaps(cur_cors, ori_cors, flips)
         
         # ori_im = np.array(ori_im)
         # ori_im = self.Rec(ori_im, ori_cors[0], point_color=(0, 255, 0))

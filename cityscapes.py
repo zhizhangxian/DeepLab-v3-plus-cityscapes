@@ -80,7 +80,7 @@ class CityScapes(Dataset):
         elif num_copys == 2:
             self.to_tensor = Pair_ToTensor(self.to_tensor)
             img_size = (1024,2048)
-            cfg.scales= (1,)
+            cfg.scales= (0.5,)
             self.trans = Compose([
                 Pair_RandomScale(cfg.scales, img_size),
                 Pair_ColorJitter(
@@ -112,7 +112,7 @@ class CityScapes(Dataset):
             return imgs, label
 
         else:
-            # im_lb = self.to_tensor(im_lb)
+            im_lb = self.to_tensor(im_lb)
             return im_lb
             
 

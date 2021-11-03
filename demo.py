@@ -74,7 +74,7 @@ from loss import OhemCELoss, pgc_loss
 
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from models.deeplabv3plus import Deeplab_v3plus
+# from models.deeplabv3plus import Deeplab_v3plus
 from configs.configurations import Config
 
 import cv2
@@ -112,7 +112,7 @@ def Rec(img, box, point_color = (0, 255, 0), thickness = 1, lineType = 4, show=F
 if __name__ == "__main__":
     cfg = Config()
     cfg.datapth = r'D:\datasets\cityscapes'
-    cfg.crop_size = (1025, 513)
+    cfg.crop_size = (384, 384)
     ds = CityScapes(cfg, mode='train', num_copys=2)
 
 
@@ -183,14 +183,44 @@ if __name__ == "__main__":
 
 
 
-    # dl = DataLoader(ds,
-    #                 batch_size = 1,
-    #                 shuffle = True,
-    #                 num_workers = 4,
-    #                 collate_fn=collate_fn2,
-    #                 drop_last = True)
-    # # for im_lb in dl:
-    # #     break
+    dl = DataLoader(ds,
+                    batch_size = 2,
+                    shuffle = False,
+                    num_workers = 2,
+                    collate_fn=collate_fn2,
+                    drop_last = True)
+    for im_lb in dl:
+        break
+
+
+    diter = iter(dl)
+    im, lb, overlap, flip = next(diter)
+    print(flip[0])
+
+    def crop(lb, overlap):
+        return lb[overlap[0][0]:overlap[1][0], overlap[0][1]:overlap[1][1]]
+
+    lb = lb.squeeze(1)
+    lb1 = crop(lb[0], overlap[0][0])
+    lb2 = crop(lb[1], overlap[0][1])
+    if flip[0] == -1:
+        lb2 = torch.flip(lb2, [1])
+
+    print(lb1.shape)
+    print(lb2.shape)
+    
+    print(lb.shape)
+    print(overlap)
+
+    print((lb1 == lb2).all())
+
+
+    # # box1 = [(overlap[0][0][0], overlap[0][0][1]), (overlap[0][1][0], overlap[0][1][1])]
+    # box1 = overlap[0]
+    # print(box1)
+    # # box2 = [(overlap[1][0][0], overlap[1][0][1]), (overlap[1][1][0], overlap[1][1][1])]
+    # box2 = overlap[1]
+    # print(box2)
 
     # net = Deeplab_v3plus(cfg)
     # net.cuda()
